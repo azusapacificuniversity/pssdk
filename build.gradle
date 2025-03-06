@@ -20,6 +20,7 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'org.graalvm.polyglot:polyglot:23.1.5'
+    implementation 'com.oracle.peoplesoft:psjoa:8.60.17'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
