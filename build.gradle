@@ -16,14 +16,9 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit test framework.
-    testImplementation libs.junit
-
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api libs.commons.math3
-
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation libs.guava
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'org.graalvm.polyglot:polyglot:23.1.5'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -31,4 +26,30 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
+}
+
+testing {
+    suites { 
+        test { 
+            useJUnitJupiter() 
+        }
+
+        integrationTest(JvmTestSuite) { 
+            dependencies {
+                implementation project() 
+            }
+
+            targets { 
+                all {
+                    testTask.configure {
+                        shouldRunAfter(test)
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') { 
+    dependsOn(testing.suites.integrationTest)
 }

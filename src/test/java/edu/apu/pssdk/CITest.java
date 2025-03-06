@@ -3,12 +3,13 @@
  */
 package edu.apu.pssdk;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CITest {
     @Test public void someLibraryMethodReturnsTrue() {
         CI classUnderTest = new CI();
-        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
+        assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'");
     }
 }
