@@ -1,8 +1,6 @@
 package edu.apu.pssdk;
 
 import java.util.Map;
-
-import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
 
@@ -14,20 +12,10 @@ public class Session {
     this.iSession = iSession;
   }
 
-  public Ci getCompIntfc(String ciName, Map<String, Boolean> options) throws JOAException {
-
-    IObject compIntfc = (IObject) this.iSession.getCompIntfc(ciName);
-
-    if (compIntfc == null) {
-      throw new JOAException("Unable to Get Component Interface");
-    }
-
-    compIntfc.setProperty("InteractiveMode", options.getOrDefault("InteractiveMode", false));
-    compIntfc.setProperty("GetHistoryItems", options.getOrDefault("GetHistoryItems", false));
-    compIntfc.setProperty("EditHistoryItems", options.getOrDefault("EditHistoryItems", false));
-
-
-    return new Ci(compIntfc);
+  public Ci ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
+    return Ci.factory(this.iSession.getCompIntfc(ciName))
+        .setInteractiveMode(options.getOrDefault("InteractiveMode", false))
+        .setGetHistoryItems(options.getOrDefault("GetHistoryItems", false))
+        .setEditHistoryItems(options.getOrDefault("EditHistoryItems", false));
   }
-
 }
