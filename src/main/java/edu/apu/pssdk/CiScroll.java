@@ -9,21 +9,24 @@ import psft.pt8.joa.JOAException;
 
 public class CiScroll {
   IObject iScroll;
+  CIPropertyInfoCollection propInfoCol;
 
-  public CiScroll(IObject iScroll) {
+  public CiScroll(IObject iScroll, CIPropertyInfoCollection propInfoCol) throws JOAException {
+    this.propInfoCol = propInfoCol;
     this.iScroll = iScroll;
   }
 
-  public static CiScroll factory(Object obj) {
-    return new CiScroll((IObject) obj);
+  public static CiScroll factory(Object obj, CIPropertyInfoCollection propInfoCol)
+      throws JOAException {
+    return new CiScroll((IObject) obj, propInfoCol);
   }
 
   public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return (CIPropertyInfoCollection) iScroll.getProperty("PropertyInfoCollection");
+    return propInfoCol;
   }
 
   public boolean isEmpty() throws JOAException {
-    return (getCount() == 1 && CiRow.factory(get(0)).isEmpty());
+    return (getCount() == 1 && CiRow.factory(get(0), getPropertyInfoCollection()).isEmpty());
   }
 
   public long getCount() throws JOAException {
@@ -39,7 +42,7 @@ public class CiScroll {
   public ProxyArray parse() throws JOAException {
     List<Object> result = new ArrayList<Object>();
     for (int j = 0; j < getCount(); j++) {
-      CiRow row = CiRow.factory(get(j));
+      CiRow row = CiRow.factory(get(j), getPropertyInfoCollection());
       result.add(row.parse());
     }
     return ProxyArray.fromList(result);

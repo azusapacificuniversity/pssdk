@@ -13,13 +13,14 @@ public class CiRow {
   IObject iRow;
   CIPropertyInfoCollection propInfoCol;
 
-  public CiRow(IObject iRow) throws JOAException {
-    propInfoCol = (CIPropertyInfoCollection) iRow.getProperty("PropertyInfoCollection");
+  public CiRow(IObject iRow, CIPropertyInfoCollection propInfoCol) throws JOAException {
+    this.propInfoCol = propInfoCol;
     this.iRow = iRow;
   }
 
-  public static CiRow factory(Object iRow) throws JOAException {
-    return new CiRow((IObject) iRow);
+  public static CiRow factory(Object iRow, CIPropertyInfoCollection propInfoCol)
+      throws JOAException {
+    return new CiRow((IObject) iRow, propInfoCol);
   }
 
   public boolean isEmpty() throws JOAException {
@@ -80,7 +81,8 @@ public class CiRow {
       Object propVal = get(propName);
 
       if (Is.ciScroll(propVal)) {
-        CiScroll scroll = CiScroll.factory(propVal);
+        CIPropertyInfoCollection pic = pi.getPropertyInfoCollection();
+        CiScroll scroll = CiScroll.factory(propVal, pic);
         result.put(propName, scroll.parse());
       } else if (Is.ciRow(propVal)) {
         // We did not find a CI that would have

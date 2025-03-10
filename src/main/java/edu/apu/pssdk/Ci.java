@@ -2,6 +2,7 @@ package edu.apu.pssdk;
 
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyObject;
+import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
@@ -19,12 +20,16 @@ public class Ci {
     return new Ci((IObject) obj);
   }
 
+  public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
+    return (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection");
+  }
+
   public ProxyObject get(Map<String, String> props) throws JOAException {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // create a CiRow as the ROOT Row for this CI
-      return CiRow.factory(iCi).parse();
+      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
     }
     throw new JOAException("Unable to get object");
   }
