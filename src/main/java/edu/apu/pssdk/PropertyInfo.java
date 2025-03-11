@@ -26,4 +26,12 @@ public class PropertyInfo {
   public boolean isKey() throws JOAException {
     return (boolean) iPropInfo.getProperty("Key");
   }
+
+  public boolean isReadOnly() throws JOAException {
+    return (boolean) iPropInfo.getProperty("IsReadOnly");
+  }
+
+  public boolean isRequired() throws JOAException {
+    return (boolean) iPropInfo.getProperty("Required");
+  }
 }

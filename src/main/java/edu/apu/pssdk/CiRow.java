@@ -38,11 +38,20 @@ public class CiRow {
   }
 
   public Object get(PropertyInfo prop) throws JOAException {
-    return iRow.getProperty(prop.getName());
+    return get(prop.getName());
   }
 
   public Object get(String propertyName) throws JOAException {
     return iRow.getProperty(propertyName);
+  }
+
+  public CiRow set(PropertyInfo prop, Object val) throws JOAException {
+    return set(prop.getName(), val);
+  }
+
+  public CiRow set(String propertyName, Object val) throws JOAException {
+    iRow.setProperty(propertyName, val);
+    return this;
   }
 
   public long getCount() throws JOAException {
@@ -64,10 +73,27 @@ public class CiRow {
 
   public Boolean isMatch(Map<String, Object> incoming) throws JOAException {
     for (PropertyInfo key : getKeys()) {
+      System.out.println(key.getName());
+      System.out.println(incoming);
       String incomingVal = incoming.get(key.getName()).toString();
       if (!get(key).toString().equals(incomingVal)) return false;
     }
     return true;
+  }
+
+  public Map<String, Object> findIn(List<Map<String, Object>> incomingList) throws JOAException {
+    return findIn(incomingList, false);
+  }
+
+  public Map<String, Object> findIn(List<Map<String, Object>> incomingList, boolean deleteFound)
+      throws JOAException {
+    for (Map<String, Object> incoming : incomingList) {
+      if (isMatch(incoming)) {
+        if (deleteFound) incomingList.remove(incoming);
+        return incoming;
+      }
+    }
+    return null;
   }
 
   public ProxyObject parse() throws JOAException {
@@ -92,5 +118,65 @@ public class CiRow {
       }
     }
     return ProxyObject.fromMap(result);
+  }
+
+  public void unParse(Map<String, Object> incoming) throws JOAException {
+    for (long i = 0; i < propInfoCol.getCount(); i++) {
+      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
+
+      if (pi.isReadOnly()) continue;
+
+      String propName = pi.getName();
+      Object incomingVal = incoming.get(propName);
+
+      if (incomingVal == null) {
+        if (pi.isRequired()) {
+          throw new JOAException(propName + " was not supplied with the data but it is required.");
+        } else {
+          // TODO Do we want to set something to null?
+          continue;
+        }
+      }
+
+      Object exVal = get(propName);
+      // check if the property is a Scroll
+      if (Is.ciScroll(exVal)) {
+
+        if (!Is.polyglotList(incomingVal))
+          throw new JOAException(propName + " should be an Array of CIRows.");
+
+        CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
+        List<Map<String, Object>> newArr = (List<Map<String, Object>>) incomingVal;
+
+        // Update existing and delete if not found in incoming
+        long j = 0;
+        while (j < scroll.getCount() && !scroll.isEmpty()) {
+          CiRow exRow = scroll.get(j);
+          if (!exRow.isEmpty()) {
+            Map<String, Object> incomingMatch = exRow.findIn(newArr, /* deleteFound */ true);
+            if (incomingMatch != null) {
+              exRow.unParse(incomingMatch);
+              j++;
+            } else {
+              scroll.delete(j);
+              // next item will take the index of the deleted row no need to change j
+            }
+          }
+        }
+        // Add non-existing
+        for (int k = 0; k < newArr.size(); k++) {
+          CiRow newRow;
+          if (scroll.isEmpty()) {
+            newRow = scroll.get(0);
+          } else {
+            newRow = scroll.insertEmptyRow();
+          }
+          newRow.unParse(newArr.get(k));
+        }
+      } else {
+        // if the property is not Read-Only and is not a CIScroll
+        set(propName, incomingVal);
+      }
+    }
   }
 }
