@@ -4,25 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyArray;
-import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
 public class CiScroll implements Iterable<CiRow> {
   IObject iScroll;
-  CIPropertyInfoCollection propInfoCol;
+  PropertyInfoCollection propInfoCol;
 
-  public CiScroll(IObject iScroll, CIPropertyInfoCollection propInfoCol) throws JOAException {
+  public CiScroll(IObject iScroll, PropertyInfoCollection propInfoCol) throws JOAException {
     this.propInfoCol = propInfoCol;
     this.iScroll = iScroll;
   }
 
-  public static CiScroll factory(Object obj, CIPropertyInfoCollection propInfoCol)
+  public static CiScroll factory(Object obj, PropertyInfoCollection propInfoCol)
       throws JOAException {
     return new CiScroll((IObject) obj, propInfoCol);
   }
 
-  public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
+  public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
     return propInfoCol;
   }
 
@@ -42,8 +41,7 @@ public class CiScroll implements Iterable<CiRow> {
   }
 
   public CiRow find(Map<String, Object> data) throws JOAException {
-    for (long i = 0; i < count(); i++) {
-      CiRow row = get(i);
+    for (CiRow row : this) {
       if (row.isMatch(data)) {
         return row;
       }
@@ -62,10 +60,31 @@ public class CiScroll implements Iterable<CiRow> {
 
   public ProxyArray parse() throws JOAException {
     List<Object> result = new ArrayList<Object>();
-    for (int j = 0; j < count(); j++) {
-      result.add(get(j).parse());
+    for (CiRow row : this) {
+      result.add(row.parse());
     }
     return ProxyArray.fromList(result);
+  }
+
+  public void unParse(List<Map<String, Object>> newArr) throws JOAException {
+    // Update existing and delete if not found in incoming
+    long j = count();
+    while (j > 0 && !isEmpty()) {
+      CiRow exRow = get(--j);
+      if (!exRow.isEmpty()) {
+        Map<String, Object> incomingMatch = exRow.findIn(newArr, /* deleteFound */ true);
+        if (incomingMatch != null) {
+          exRow.unParse(incomingMatch);
+        } else {
+          delete(j); // next takes index of the deleted, but we're looking for previous
+        }
+      }
+    }
+    // Add non-existing
+    for (Map<String, Object> incomingObj : newArr) {
+      CiRow newRow = isEmpty() ? get(0) : insertEmptyRow();
+      newRow.unParse(incomingObj);
+    }
   }
 
   @Override

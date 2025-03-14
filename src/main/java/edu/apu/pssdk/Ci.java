@@ -21,12 +21,14 @@ public class Ci {
     return new Ci((IObject) obj);
   }
 
-  public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection");
+  public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection"));
   }
 
-  public CIPropertyInfoCollection getGetKeyInfoCollection() throws JOAException {
-    return (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection");
+  public PropertyInfoCollection getGetKeyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection"));
   }
 
   public ProxyObject get(Map<String, String> props) throws JOAException {
@@ -40,20 +42,20 @@ public class Ci {
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException {
+
     // use to GET before SAVE
     Map<String, String> getProps = new HashMap<>();
-    CIPropertyInfoCollection getKeyInfoCol = getGetKeyInfoCollection();
-    for (long i = 0; i < getKeyInfoCol.getCount(); i++) {
-      IObject getKeyPropInfo = getKeyInfoCol.item(i);
-      String keyName = getKeyPropInfo.getProperty("Name").toString();
+    for (PropertyInfo getKey : getGetKeyInfoCollection()) {
+      String keyName = getKey.getName();
       getProps.put(keyName, (String) data.get(keyName));
     }
     this.get(getProps);
-    // Get propertyInfoCollection
-    CIPropertyInfoCollection propInfoCol = getPropertyInfoCollection();
-    CiRow root = CiRow.factory(iCi, propInfoCol);
+
+    // unparse
+    CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
     root.unParse(data);
 
+    // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
       return this.get(getProps);
     }

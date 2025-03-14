@@ -15,8 +15,9 @@ public class PropertyInfo {
     return new PropertyInfo((IObject) iProp);
   }
 
-  public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return (CIPropertyInfoCollection) iPropInfo.getProperty("PropertyInfoCollection");
+  public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iPropInfo.getProperty("PropertyInfoCollection"));
   }
 
   public String getName() throws JOAException {

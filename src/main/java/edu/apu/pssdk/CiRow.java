@@ -1,6 +1,5 @@
 package edu.apu.pssdk;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,22 +10,25 @@ import psft.pt8.joa.JOAException;
 
 public class CiRow {
   IObject iRow;
-  CIPropertyInfoCollection propInfoCol;
+  PropertyInfoCollection propInfoCol;
 
-  public CiRow(IObject iRow, CIPropertyInfoCollection propInfoCol) throws JOAException {
+  public CiRow(IObject iRow, PropertyInfoCollection propInfoCol) throws JOAException {
     this.propInfoCol = propInfoCol;
     this.iRow = iRow;
   }
 
   public static CiRow factory(Object iRow, CIPropertyInfoCollection propInfoCol)
       throws JOAException {
+    return new CiRow((IObject) iRow, PropertyInfoCollection.factory(propInfoCol));
+  }
+
+  public static CiRow factory(Object iRow, PropertyInfoCollection propInfoCol) throws JOAException {
     return new CiRow((IObject) iRow, propInfoCol);
   }
 
   public boolean isEmpty() throws JOAException {
     boolean result = false;
-    for (long i = 0; i < propInfoCol.getCount(); i++) {
-      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
+    for (PropertyInfo pi : propInfoCol) {
       if (!pi.isKey()) continue;
 
       if (get(pi).toString().equals("")) {
@@ -54,27 +56,17 @@ public class CiRow {
     return this;
   }
 
+  /** Count attributes */
   public long count() throws JOAException {
     return ((Long) iRow.getProperty("Count")).longValue();
   }
 
-  public CIPropertyInfoCollection getPropertyInfoCollection() {
+  public PropertyInfoCollection getPropertyInfoCollection() {
     return propInfoCol;
   }
 
-  public List<PropertyInfo> getKeys() throws JOAException {
-    List<PropertyInfo> keys = new ArrayList<PropertyInfo>();
-    for (int i = 0; i < propInfoCol.getCount(); i++) {
-      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
-      if (pi.isKey()) keys.add(pi);
-    }
-    return keys;
-  }
-
   public Boolean isMatch(Map<String, Object> incoming) throws JOAException {
-    for (PropertyInfo key : getKeys()) {
-      System.out.println(key.getName());
-      System.out.println(incoming);
+    for (PropertyInfo key : propInfoCol.keys()) {
       String incomingVal = incoming.get(key.getName()).toString();
       if (!get(key).toString().equals(incomingVal)) return false;
     }
@@ -97,17 +89,14 @@ public class CiRow {
   }
 
   public ProxyObject parse() throws JOAException {
-    CIPropertyInfoCollection propInfoCol = getPropertyInfoCollection();
     Map<String, Object> result = new HashMap<>();
 
-    for (int i = 0; i < propInfoCol.getCount(); i++) {
-
-      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
+    for (PropertyInfo pi : propInfoCol) {
       String propName = pi.getName();
       Object propVal = get(propName);
 
       if (Is.ciScroll(propVal)) {
-        CIPropertyInfoCollection pic = pi.getPropertyInfoCollection();
+        PropertyInfoCollection pic = pi.getPropertyInfoCollection();
         CiScroll scroll = CiScroll.factory(propVal, pic);
         result.put(propName, scroll.parse());
       } else if (Is.ciRow(propVal)) {
@@ -120,10 +109,9 @@ public class CiRow {
     return ProxyObject.fromMap(result);
   }
 
+  @SuppressWarnings("unchecked")
   public void unParse(Map<String, Object> incoming) throws JOAException {
-    for (long i = 0; i < propInfoCol.getCount(); i++) {
-      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
-
+    for (PropertyInfo pi : propInfoCol) {
       if (pi.isReadOnly()) continue;
 
       String propName = pi.getName();
@@ -148,31 +136,7 @@ public class CiRow {
         CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
         List<Map<String, Object>> newArr = (List<Map<String, Object>>) incomingVal;
 
-        // Update existing and delete if not found in incoming
-        long j = 0;
-        while (j < scroll.count() && !scroll.isEmpty()) {
-          CiRow exRow = scroll.get(j);
-          if (!exRow.isEmpty()) {
-            Map<String, Object> incomingMatch = exRow.findIn(newArr, /* deleteFound */ true);
-            if (incomingMatch != null) {
-              exRow.unParse(incomingMatch);
-              j++;
-            } else {
-              scroll.delete(j);
-              // next item will take the index of the deleted row no need to change j
-            }
-          }
-        }
-        // Add non-existing
-        for (int k = 0; k < newArr.size(); k++) {
-          CiRow newRow;
-          if (scroll.isEmpty()) {
-            newRow = scroll.get(0);
-          } else {
-            newRow = scroll.insertEmptyRow();
-          }
-          newRow.unParse(newArr.get(k));
-        }
+        scroll.unParse(newArr);
       } else {
         // if the property is not Read-Only and is not a CIScroll
         set(propName, incomingVal);
