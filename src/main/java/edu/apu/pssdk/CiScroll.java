@@ -8,7 +8,7 @@ import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
-public class CiScroll {
+public class CiScroll implements Iterable<CiRow> {
   IObject iScroll;
   CIPropertyInfoCollection propInfoCol;
 
@@ -27,10 +27,10 @@ public class CiScroll {
   }
 
   public boolean isEmpty() throws JOAException {
-    return (getCount() == 1 && get(0).isEmpty());
+    return (count() == 1 && get(0).isEmpty());
   }
 
-  public long getCount() throws JOAException {
+  public long count() throws JOAException {
     return ((Long) iScroll.getProperty("Count")).longValue();
   }
 
@@ -42,7 +42,7 @@ public class CiScroll {
   }
 
   public CiRow find(Map<String, Object> data) throws JOAException {
-    for (long i = 0; i < getCount(); i++) {
+    for (long i = 0; i < count(); i++) {
       CiRow row = get(i);
       if (row.isMatch(data)) {
         return row;
@@ -62,9 +62,44 @@ public class CiScroll {
 
   public ProxyArray parse() throws JOAException {
     List<Object> result = new ArrayList<Object>();
-    for (int j = 0; j < getCount(); j++) {
+    for (int j = 0; j < count(); j++) {
       result.add(get(j).parse());
     }
     return ProxyArray.fromList(result);
+  }
+
+  @Override
+  public java.util.Iterator<CiRow> iterator() {
+    return new CiScrollIterator();
+  }
+
+  private class CiScrollIterator implements java.util.Iterator<CiRow> {
+    private long currentIndex = 0;
+    private final long count;
+
+    public CiScrollIterator() {
+      try {
+        count = count();
+      } catch (JOAException e) {
+        throw new RuntimeException("Failed to get scroll count", e);
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currentIndex < count;
+    }
+
+    @Override
+    public CiRow next() {
+      if (!hasNext()) {
+        throw new java.util.NoSuchElementException();
+      }
+      try {
+        return get(currentIndex++);
+      } catch (JOAException e) {
+        throw new RuntimeException("Failed to get row at index " + (currentIndex - 1), e);
+      }
+    }
   }
 }

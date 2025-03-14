@@ -54,7 +54,7 @@ public class CiRow {
     return this;
   }
 
-  public long getCount() throws JOAException {
+  public long count() throws JOAException {
     return ((Long) iRow.getProperty("Count")).longValue();
   }
 
@@ -150,7 +150,7 @@ public class CiRow {
 
         // Update existing and delete if not found in incoming
         long j = 0;
-        while (j < scroll.getCount() && !scroll.isEmpty()) {
+        while (j < scroll.count() && !scroll.isEmpty()) {
           CiRow exRow = scroll.get(j);
           if (!exRow.isEmpty()) {
             Map<String, Object> incomingMatch = exRow.findIn(newArr, /* deleteFound */ true);
