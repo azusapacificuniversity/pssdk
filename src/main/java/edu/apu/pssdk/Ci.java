@@ -1,5 +1,6 @@
 package edu.apu.pssdk;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.CIPropertyInfoCollection;
@@ -20,8 +21,14 @@ public class Ci {
     return new Ci((IObject) obj);
   }
 
-  public CIPropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection");
+  public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection"));
+  }
+
+  public PropertyInfoCollection getGetKeyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection"));
   }
 
   public ProxyObject get(Map<String, String> props) throws JOAException {
@@ -32,6 +39,27 @@ public class Ci {
       return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
     }
     throw new JOAException("Unable to get object");
+  }
+
+  public ProxyObject save(Map<String, Object> data) throws JOAException {
+
+    // use to GET before SAVE
+    Map<String, String> getProps = new HashMap<>();
+    for (PropertyInfo getKey : getGetKeyInfoCollection()) {
+      String keyName = getKey.getName();
+      getProps.put(keyName, (String) data.get(keyName));
+    }
+    this.get(getProps);
+
+    // unparse
+    CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
+    root.unParse(data);
+
+    // invoke save on the CI
+    if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
+      return this.get(getProps);
+    }
+    throw new JOAException("Unable to save object");
   }
 
   public boolean getInteractiveMode() throws JOAException {
