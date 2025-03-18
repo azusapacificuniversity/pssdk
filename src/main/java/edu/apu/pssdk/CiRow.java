@@ -92,10 +92,8 @@ public class CiRow {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
+      if (pi.isFindKey() && !pi.isListKey()) continue;
       String propName = pi.getName();
-
-      // TODO: figure out how to make this reusable for both get and find
-      if (!pi.isListKey()) continue;
       Object propVal = get(propName);
 
       if (Is.ciScroll(propVal)) {
