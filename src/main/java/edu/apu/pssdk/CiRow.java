@@ -92,6 +92,7 @@ public class CiRow {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
+      if (pi.isFindKey() && !pi.isListKey()) continue;
       String propName = pi.getName();
       Object propVal = get(propName);
 

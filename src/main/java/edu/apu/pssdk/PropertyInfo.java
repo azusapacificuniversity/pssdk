@@ -1,10 +1,13 @@
 package edu.apu.pssdk;
 
+import java.lang.reflect.Field;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
 public class PropertyInfo {
+  static final int ALTERNATE_SEARCH_KEY = 16;
+  static final int LISTBOX_ITEM_NUM = 32;
   IObject iPropInfo;
 
   public PropertyInfo(IObject iProp) {
@@ -34,5 +37,30 @@ public class PropertyInfo {
 
   public boolean isRequired() throws JOAException {
     return (boolean) iPropInfo.getProperty("Required");
+  }
+
+  public boolean isListKey() throws JOAException {
+    return (getUseEdit() & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
+  }
+
+  public boolean isFindKey() throws JOAException {
+    return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
+  }
+
+  private int getUseEdit() throws JOAException {
+    String errMsg = "Unable to retrieve \"m_fUseEdit\"";
+    try {
+      Field[] declaredFields = iPropInfo.getClass().getDeclaredFields();
+      for (Field field : declaredFields) {
+        if (field.getName().equals("m_fUseEdit")) {
+          field.setAccessible(true);
+          return (int) field.get(iPropInfo);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new JOAException(errMsg);
+    }
+    throw new JOAException(errMsg);
   }
 }
