@@ -9,12 +9,24 @@ public class PropertyInfo {
   static final int ALTERNATE_SEARCH_KEY = 16;
   static final int LISTBOX_ITEM_NUM = 32;
   IObject iPropInfo;
+  int useEdit;
 
-  public PropertyInfo(IObject iProp) {
+  public PropertyInfo(IObject iProp) throws JOAException {
     this.iPropInfo = iProp;
+    try {
+      Field[] declaredFields = iPropInfo.getClass().getDeclaredFields();
+      for (Field field : declaredFields) {
+        if (field.getName().equals("m_fUseEdit")) {
+          field.setAccessible(true);
+          useEdit = (int) field.get(iPropInfo);
+        }
+      }
+    } catch (Exception e) {
+      throw new JOAException("Can not access m_fUseEdit field");
+    }
   }
 
-  public static PropertyInfo factory(Object iProp) {
+  public static PropertyInfo factory(Object iProp) throws JOAException {
     return new PropertyInfo((IObject) iProp);
   }
 
@@ -47,20 +59,7 @@ public class PropertyInfo {
     return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
   }
 
-  private int getUseEdit() throws JOAException {
-    String errMsg = "Unable to retrieve \"m_fUseEdit\"";
-    try {
-      Field[] declaredFields = iPropInfo.getClass().getDeclaredFields();
-      for (Field field : declaredFields) {
-        if (field.getName().equals("m_fUseEdit")) {
-          field.setAccessible(true);
-          return (int) field.get(iPropInfo);
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new JOAException(errMsg);
-    }
-    throw new JOAException(errMsg);
+  private int getUseEdit() {
+    return useEdit;
   }
 }
