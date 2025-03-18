@@ -37,6 +37,11 @@ public class Ci {
         (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection"));
   }
 
+  public PropertyInfoCollection getCreateKeyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
+  }
+
   public ProxyObject get(Map<String, String> props) throws JOAException {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
@@ -45,6 +50,14 @@ public class Ci {
       return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
     }
     throw new JOAException("Unable to get object");
+  }
+
+  public ProxyArray find(Map<String, String> props) throws JOAException {
+    for (Map.Entry<String, String> entry : props.entrySet())
+      iCi.setProperty(entry.getKey(), entry.getValue());
+    Object[] args = new Object[0];
+    return CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection())
+        .parse();
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException {
@@ -68,12 +81,27 @@ public class Ci {
     throw new JOAException("Unable to save object");
   }
 
-  public ProxyArray find(Map<String, String> props) throws JOAException {
-    for (Map.Entry<String, String> entry : props.entrySet())
-      iCi.setProperty(entry.getKey(), entry.getValue());
-    Object[] args = new Object[0];
-    return CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection())
-        .parse();
+  public ProxyObject create(Map<String, Object> data) throws JOAException {
+    CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
+    createRoot.unParse(data);
+    if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
+      throw new JOAException("Operation CREATE not supported by the CI");
+    }
+
+    // unparse
+    CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
+    root.unParse(data);
+
+    // invoke save on the CI
+    if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
+      Map<String, String> getProps = new HashMap<>();
+      for (PropertyInfo getKey : getGetKeyInfoCollection()) {
+        String keyName = getKey.getName();
+        getProps.put(keyName, (String) data.get(keyName));
+      }
+      return this.get(getProps);
+    }
+    throw new JOAException("Unable to save object");
   }
 
   public boolean getInteractiveMode() throws JOAException {

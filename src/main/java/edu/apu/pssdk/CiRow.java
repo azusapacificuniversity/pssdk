@@ -127,6 +127,10 @@ public class CiRow {
         }
       }
 
+      if (pi.isKey()) {
+        set(propName, incomingVal);
+        continue;
+      }
       Object exVal = get(propName);
       // check if the property is a Scroll
       if (Is.ciScroll(exVal)) {
