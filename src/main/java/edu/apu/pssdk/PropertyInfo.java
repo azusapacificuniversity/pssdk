@@ -6,6 +6,7 @@ import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
 public class PropertyInfo {
+  static final int ALTERNATE_SEARCH_KEY = 16;
   static final int LISTBOX_ITEM_NUM = 32;
   IObject iPropInfo;
 
@@ -39,8 +40,11 @@ public class PropertyInfo {
   }
 
   public boolean isListKey() throws JOAException {
-    // For some reason, Peoplesoft has this reversed
-    return (getUseEdit() & LISTBOX_ITEM_NUM) != 0;
+    return (getUseEdit() & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
+  }
+
+  public boolean isFindKey() throws JOAException {
+    return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
   }
 
   private int getUseEdit() throws JOAException {
