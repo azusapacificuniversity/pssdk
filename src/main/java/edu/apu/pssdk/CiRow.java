@@ -93,6 +93,9 @@ public class CiRow {
 
     for (PropertyInfo pi : propInfoCol) {
       String propName = pi.getName();
+
+      // TODO: figure out how to make this reusable for both get and find
+      if (!pi.isListKey()) continue;
       Object propVal = get(propName);
 
       if (Is.ciScroll(propVal)) {

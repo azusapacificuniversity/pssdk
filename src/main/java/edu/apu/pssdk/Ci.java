@@ -2,6 +2,7 @@ package edu.apu.pssdk;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
@@ -24,6 +25,11 @@ public class Ci {
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
     return PropertyInfoCollection.factory(
         (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection"));
+  }
+
+  public PropertyInfoCollection getFindPropertyInfoCollection() throws JOAException {
+    return PropertyInfoCollection.factory(
+        (CIPropertyInfoCollection) iCi.getProperty("FindKeyInfoCollection"));
   }
 
   public PropertyInfoCollection getGetKeyInfoCollection() throws JOAException {
@@ -60,6 +66,14 @@ public class Ci {
       return this.get(getProps);
     }
     throw new JOAException("Unable to save object");
+  }
+
+  public ProxyArray find(Map<String, String> props) throws JOAException {
+    for (Map.Entry<String, String> entry : props.entrySet())
+      iCi.setProperty(entry.getKey(), entry.getValue());
+    Object[] args = new Object[0];
+    return CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection())
+        .parse();
   }
 
   public boolean getInteractiveMode() throws JOAException {
