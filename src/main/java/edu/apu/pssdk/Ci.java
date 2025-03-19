@@ -76,7 +76,7 @@ public class Ci {
 
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      return this.get(getProps);
+      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
     }
     throw new JOAException("Unable to save object");
   }
@@ -94,12 +94,7 @@ public class Ci {
 
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      Map<String, String> getProps = new HashMap<>();
-      for (PropertyInfo getKey : getGetKeyInfoCollection()) {
-        String keyName = getKey.getName();
-        getProps.put(keyName, (String) data.get(keyName));
-      }
-      return this.get(getProps);
+      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
     }
     throw new JOAException("Unable to save object");
   }
