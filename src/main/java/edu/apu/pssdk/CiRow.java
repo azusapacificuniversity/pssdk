@@ -67,8 +67,9 @@ public class CiRow {
 
   public Boolean isMatch(Map<String, Object> incoming) throws JOAException {
     for (PropertyInfo key : propInfoCol.keys()) {
-      String incomingVal = incoming.get(key.getName()).toString();
-      if (!get(key).toString().equals(incomingVal)) return false;
+      Object incomingVal = incoming.get(key.getName());
+      if (incomingVal == null) return false;
+      if (!get(key).toString().equals(incomingVal.toString())) return false;
     }
     return true;
   }
@@ -113,27 +114,19 @@ public class CiRow {
   @SuppressWarnings("unchecked")
   public void unParse(Map<String, Object> incoming) throws JOAException {
     for (PropertyInfo pi : propInfoCol) {
+      // if it's read only, we can not do anything about it and PS is going to complain if we try
       if (pi.isReadOnly()) continue;
 
       String propName = pi.getName();
       Object incomingVal = incoming.get(propName);
 
-      if (incomingVal == null) {
-        if (pi.isRequired()) {
-          throw new JOAException(propName + " was not supplied with the data but it is required.");
-        } else {
-          // TODO Do we want to set something to null?
-          continue;
-        }
-      }
+      // if there is no incoming val, just ignore, PS is going to complain if required, anyways
+      if (incomingVal == null) continue;
+      
 
-      if (pi.isKey()) {
-        set(propName, incomingVal);
-        continue;
-      }
-      Object exVal = get(propName);
       // check if the property is a Scroll
-      if (Is.ciScroll(exVal)) {
+      if (pi.isCollection()) {
+        Object exVal = get(propName);
 
         if (!Is.polyglotList(incomingVal))
           throw new JOAException(propName + " should be an Array of CIRows.");

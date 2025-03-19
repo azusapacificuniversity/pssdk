@@ -51,12 +51,20 @@ public class PropertyInfo {
     return (boolean) iPropInfo.getProperty("Required");
   }
 
+  public boolean isCollection() throws JOAException {
+    return (boolean) iPropInfo.getProperty("IsCollection");
+  }
+
   public boolean isListKey() throws JOAException {
     return (getUseEdit() & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
   }
 
   public boolean isFindKey() throws JOAException {
     return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
+  }
+
+  public boolean hasDefaultValue() throws JOAException {
+    return (boolean) iPropInfo.getProperty("Default");
   }
 
   private int getUseEdit() {
