@@ -89,7 +89,7 @@ public class CiRow {
     return null;
   }
 
-  public ProxyObject parse() throws JOAException {
+  public ProxyObject toProxy() throws JOAException {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
@@ -100,7 +100,7 @@ public class CiRow {
       if (Is.ciScroll(propVal)) {
         PropertyInfoCollection pic = pi.getPropertyInfoCollection();
         CiScroll scroll = CiScroll.factory(propVal, pic);
-        result.put(propName, scroll.parse());
+        result.put(propName, scroll.toProxy());
       } else if (Is.ciRow(propVal)) {
         // We did not find a CI that would have
         // a CiRow nested under ROOT or another CiRow
@@ -112,17 +112,16 @@ public class CiRow {
   }
 
   @SuppressWarnings("unchecked")
-  public void unParse(Map<String, Object> incoming) throws JOAException {
+  public void populateWith(Map<String, Object> dataObject) throws JOAException {
     for (PropertyInfo pi : propInfoCol) {
       // if it's read only, we can not do anything about it and PS is going to complain if we try
       if (pi.isReadOnly()) continue;
 
       String propName = pi.getName();
-      Object incomingVal = incoming.get(propName);
+      Object incomingVal = dataObject.get(propName);
 
       // if there is no incoming val, just ignore, PS is going to complain if required, anyways
       if (incomingVal == null) continue;
-      
 
       // check if the property is a Scroll
       if (pi.isCollection()) {
@@ -132,9 +131,9 @@ public class CiRow {
           throw new JOAException(propName + " should be an Array of CIRows.");
 
         CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
-        List<Map<String, Object>> newArr = (List<Map<String, Object>>) incomingVal;
+        List<Map<String, Object>> subDataList = (List<Map<String, Object>>) incomingVal;
 
-        scroll.unParse(newArr);
+        scroll.populateWith(subDataList);
       } else {
         // if the property is not Read-Only and is not a CIScroll
         set(propName, incomingVal);
