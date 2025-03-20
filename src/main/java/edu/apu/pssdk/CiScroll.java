@@ -58,32 +58,32 @@ public class CiScroll implements Iterable<CiRow> {
     return iScroll.invokeMethod("DeleteItem", new Object[] {index});
   }
 
-  public ProxyArray parse() throws JOAException {
+  public ProxyArray toProxy() throws JOAException {
     List<Object> result = new ArrayList<Object>();
     for (CiRow row : this) {
-      result.add(row.parse());
+      result.add(row.toProxy());
     }
     return ProxyArray.fromList(result);
   }
 
-  public void unParse(List<Map<String, Object>> newArr) throws JOAException {
+  public void populateWith(List<Map<String, Object>> dataList) throws JOAException {
     // Update existing and delete if not found in incoming
     long j = count();
     while (j > 0 && !isEmpty()) {
       CiRow exRow = get(--j);
       if (!exRow.isEmpty()) {
-        Map<String, Object> incomingMatch = exRow.findIn(newArr, /* deleteFound */ true);
+        Map<String, Object> incomingMatch = exRow.findIn(dataList, /* deleteFound */ true);
         if (incomingMatch != null) {
-          exRow.unParse(incomingMatch);
+          exRow.populateWith(incomingMatch);
         } else {
           delete(j); // next takes index of the deleted, but we're looking for previous
         }
       }
     }
     // Add non-existing
-    for (Map<String, Object> incomingObj : newArr) {
+    for (Map<String, Object> incomingObj : dataList) {
       CiRow newRow = isEmpty() ? get(0) : insertEmptyRow();
-      newRow.unParse(incomingObj);
+      newRow.populateWith(incomingObj);
     }
   }
 

@@ -47,7 +47,7 @@ public class Ci {
       iCi.setProperty(entry.getKey(), entry.getValue());
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // create a CiRow as the ROOT Row for this CI
-      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
     }
     throw new JOAException("Unable to get object");
   }
@@ -57,7 +57,7 @@ public class Ci {
       iCi.setProperty(entry.getKey(), entry.getValue());
     Object[] args = new Object[0];
     return CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection())
-        .parse();
+        .toProxy();
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException {
@@ -72,29 +72,29 @@ public class Ci {
 
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
-    root.unParse(data);
+    root.populateWith(data);
 
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
     }
     throw new JOAException("Unable to save object");
   }
 
   public ProxyObject create(Map<String, Object> data) throws JOAException {
     CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
-    createRoot.unParse(data);
+    createRoot.populateWith(data);
     if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
       throw new JOAException("Operation CREATE not supported by the CI");
     }
 
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
-    root.unParse(data);
+    root.populateWith(data);
 
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      return CiRow.factory(iCi, getPropertyInfoCollection()).parse();
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
     }
     throw new JOAException("Unable to save object");
   }
