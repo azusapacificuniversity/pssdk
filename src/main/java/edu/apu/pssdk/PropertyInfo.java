@@ -63,10 +63,6 @@ public class PropertyInfo {
     return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
   }
 
-  public boolean hasDefaultValue() throws JOAException {
-    return (boolean) iPropInfo.getProperty("Default");
-  }
-
   private int getUseEdit() {
     return useEdit;
   }
