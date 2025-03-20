@@ -46,7 +46,7 @@ public class Ci {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
-      // create a CiRow as the ROOT Row for this CI
+      // a "CiRow" acting the ROOT for this CI
       return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
     }
     throw new JOAException("Unable to get object");
