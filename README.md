@@ -34,5 +34,5 @@ EXPOSE 3000
 
 USER app
 
-CMD ["node", "--jvm", "--vm.cp=peoplesoft-sdk-all.jar", "src/index.js"]
+CMD ["node", "--jvm", "--vm.cp=/opt/peoplesoft-sdk-all.jar", "src/index.js"]
 ```
