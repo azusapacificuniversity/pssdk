@@ -21,15 +21,18 @@ MAINTAINER Azusa Pacific University
 
 ARG NPM_TOKEN
 
-COPY .npmrc .npmrc
+RUN useradd -m -g root app \
+ && chmod -R 750 /home/app
 
-COPY package*.json ./
+WORKDIR /home/app
+
+COPY .npmrc package*.json src/ .
 
 RUN npm ci --omit=dev
 
-COPY src src
-
 EXPOSE 3000
 
-CMD ["node", "--jvm", "--vm.cp=peoplesoft-sdk-all.jar", "src/index.js"]
+USER app
+
+CMD ["node", "--jvm", "--vm.cp=/opt/peoplesoft-sdk-all.jar", "src/index.js"]
 ```
