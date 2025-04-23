@@ -43,11 +43,17 @@ public class Ci {
   }
 
   public ProxyObject get(Map<String, String> props) throws JOAException {
+    return this.get(props, true);
+  }
+
+  private ProxyObject get(Map<String, String> props, boolean reset) throws JOAException {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // a "CiRow" acting the ROOT for this CI
-      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+      ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+      if (reset) cancel(); // reset the CI
+      return result;
     }
     throw new JOAException("Unable to get object");
   }
@@ -56,8 +62,10 @@ public class Ci {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
     Object[] args = new Object[0];
-    return CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection())
-        .toProxy();
+    ProxyArray result =
+        CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection()).toProxy();
+    cancel();
+    return result;
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException {
@@ -68,7 +76,7 @@ public class Ci {
       String keyName = getKey.getName();
       getProps.put(keyName, (String) data.get(keyName));
     }
-    this.get(getProps);
+    this.get(getProps, false);
 
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
@@ -76,7 +84,9 @@ public class Ci {
 
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+      ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+      cancel();
+      return result;
     }
     throw new JOAException("Unable to save object");
   }
@@ -102,6 +112,12 @@ public class Ci {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
         throw new PSSDKException("Operation CREATE not supported by the CI", e);
       throw e;
+    }
+  }
+
+  public void cancel() throws JOAException {
+    if (!((Boolean) (iCi.invokeMethod("Cancel", new Object[0]))).booleanValue()) {
+      throw new JOAException("Operation CANCEL failed.");
     }
   }
 
