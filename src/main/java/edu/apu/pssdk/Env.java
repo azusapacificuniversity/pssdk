@@ -1,6 +1,7 @@
 package edu.apu.pssdk;
 
 import com.google.common.base.Strings;
+import java.util.HashMap;
 import java.util.Map;
 import psft.pt8.joa.API;
 import psft.pt8.joa.ISession;
@@ -16,6 +17,10 @@ public class Env {
     strDomainConnPswd = System.getenv("APP_SERVER_DOMAIN_CONNECTION_PASSWORD");
     strUserID = System.getenv("APP_SERVER_USERNAME");
     strPassword = System.getenv("APP_SERVER_PASSWORD");
+  }
+
+  public static Ci ciFactory(String ciName) throws JOAException {
+    return ciFactory(ciName, new HashMap<String, Boolean>());
   }
 
   public static Ci ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
