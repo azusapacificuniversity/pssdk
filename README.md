@@ -10,6 +10,17 @@ Run Gradle with the `shadowJar` task to have a single jar build.
 $ ./gradlew clean build shadowJar
 ```
 
+Build with docker:
+
+```
+$ docker build . -t quay.apu.edu/intdev/pssdk
+```
+
+And finally push the image to Quay:
+```
+$ docker push quay.apu.edu/intdev/pssdk
+```
+
 ### Usage
 
 You can use this project through the GraalJS Node.js project. A container image
