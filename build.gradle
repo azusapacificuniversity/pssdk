@@ -20,7 +20,7 @@ repositories {
 dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:33.2.1-jre'
-    implementation 'org.graalvm.polyglot:polyglot:23.1.5'
+    implementation 'org.graalvm.polyglot:polyglot:24.2.1'
     implementation 'com.oracle.peoplesoft:psjoa:8.60.17'
 }
 
