@@ -12,9 +12,9 @@ public class Session {
     this.iSession = iSession;
   }
 
-  public Ci ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
+  public CI ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
     Object oCi = this.iSession.getCompIntfc(ciName);
-    return Ci.factory(oCi)
+    return CI.factory(oCi)
         .setInteractiveMode(options.getOrDefault("InteractiveMode", false))
         .setGetHistoryItems(options.getOrDefault("GetHistoryItems", false))
         .setEditHistoryItems(options.getOrDefault("EditHistoryItems", false));

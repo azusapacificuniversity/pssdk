@@ -8,18 +8,18 @@ import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
-public class Ci {
+public class CI {
   IObject iCi;
 
-  public Ci(IObject iCi) throws JOAException {
+  public CI(IObject iCi) throws JOAException {
     if (iCi == null) {
       throw new JOAException("Unable to Get Component Interface");
     }
     this.iCi = iCi;
   }
 
-  public static Ci factory(Object obj) throws JOAException {
-    return new Ci((IObject) obj);
+  public static CI factory(Object obj) throws JOAException {
+    return new CI((IObject) obj);
   }
 
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
@@ -125,7 +125,7 @@ public class Ci {
     return (boolean) iCi.getProperty("InteractiveMode");
   }
 
-  public Ci setInteractiveMode(boolean inInteractiveMode) throws JOAException {
+  public CI setInteractiveMode(boolean inInteractiveMode) throws JOAException {
     iCi.setProperty("InteractiveMode", inInteractiveMode);
     return this;
   }
@@ -134,7 +134,7 @@ public class Ci {
     return (boolean) iCi.getProperty("GetHistoryItems");
   }
 
-  public Ci setGetHistoryItems(boolean inGetHistoryItems) throws JOAException {
+  public CI setGetHistoryItems(boolean inGetHistoryItems) throws JOAException {
     iCi.setProperty("GetHistoryItems", inGetHistoryItems);
     return this;
   }
@@ -143,7 +143,7 @@ public class Ci {
     return (boolean) iCi.getProperty("EditHistoryItems");
   }
 
-  public Ci setEditHistoryItems(boolean inEditHistoryItems) throws JOAException {
+  public CI setEditHistoryItems(boolean inEditHistoryItems) throws JOAException {
     iCi.setProperty("EditHistoryItems", inEditHistoryItems);
     return this;
   }
