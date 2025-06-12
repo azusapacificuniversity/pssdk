@@ -35,11 +35,11 @@ public class AppServer {
 
   public static AppServer fromEnv() throws JOAException {
     Map<String, String> config = new HashMap<>();
-    config.put("hostname", System.getenv("APP_SERVER_HOSTNAME"));
-    config.put("joltport", System.getenv("APP_SERVER_JOLTPORT"));
-    config.put("dmncnpwd", System.getenv("APP_SERVER_DOMAIN_CONNECTION_PASSWORD"));
-    config.put("username", System.getenv("APP_SERVER_USERNAME"));
-    config.put("password", System.getenv("APP_SERVER_PASSWORD"));
+    config.put("hostname", System.getenv("PS_APPSERVER_HOSTNAME"));
+    config.put("joltport", System.getenv("PS_APPSERVER_JOLTPORT"));
+    config.put("dmncnpwd", System.getenv("PS_APPSERVER_DOMAINPW"));
+    config.put("username", System.getenv("PS_APPSERVER_USERNAME"));
+    config.put("password", System.getenv("PS_APPSERVER_PASSWORD"));
 
     return new AppServer(config);
   }
