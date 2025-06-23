@@ -19,7 +19,7 @@ public class AppServer {
   public AppServer(Map<String, String> config) throws JOAException {
     strServerName = config.get("hostname");
     strServerPort = config.get("joltport");
-    strDomainConnectionPassword = config.get("dmncnpwd");
+    strDomainConnectionPassword = config.get("domainpw");
     strUserID = config.get("username");
     strPassword = config.get("password");
     if (Strings.isNullOrEmpty(strServerName)
@@ -27,7 +27,17 @@ public class AppServer {
         || Strings.isNullOrEmpty(strUserID)
         || Strings.isNullOrEmpty(strPassword)) {
       throw new JOAException(
-          "Connect information provided is incomplete. Please provide all necessary environment variables.");
+          "Connect information provided is incomplete. Please provide all necessary environment variables. "
+              + "ServerName: "
+              + Strings.nullToEmpty(strServerName)
+              + ", ServerPort: "
+              + Strings.nullToEmpty(strServerPort)
+              + ", UserID: "
+              + Strings.nullToEmpty(strUserID)
+              + ", Password: "
+              + (Strings.isNullOrEmpty(strPassword)
+                  ? "[not provided]"
+                  : "*".repeat(strPassword.length())));
     }
     // Build Application Server Path
     strAppServerPath = strServerName + ":" + strServerPort;
@@ -35,11 +45,11 @@ public class AppServer {
 
   public static AppServer fromEnv() throws JOAException {
     Map<String, String> config = new HashMap<>();
-    config.put("hostname", System.getenv("APP_SERVER_HOSTNAME"));
-    config.put("joltport", System.getenv("APP_SERVER_JOLTPORT"));
-    config.put("dmncnpwd", System.getenv("APP_SERVER_DOMAIN_CONNECTION_PASSWORD"));
-    config.put("username", System.getenv("APP_SERVER_USERNAME"));
-    config.put("password", System.getenv("APP_SERVER_PASSWORD"));
+    config.put("hostname", System.getenv("PS_APPSERVER_HOSTNAME"));
+    config.put("joltport", System.getenv("PS_APPSERVER_JOLTPORT"));
+    config.put("domainpw", System.getenv("PS_APPSERVER_DOMAINPW"));
+    config.put("username", System.getenv("PS_APPSERVER_USERNAME"));
+    config.put("password", System.getenv("PS_APPSERVER_PASSWORD"));
 
     return new AppServer(config);
   }

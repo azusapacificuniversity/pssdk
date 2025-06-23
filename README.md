@@ -47,3 +47,18 @@ USER app
 
 CMD ["node", "--jvm", "--vm.cp=/opt/peoplesoft-sdk-all.jar", "src/index.js"]
 ```
+
+### Environment Variables
+
+The project can make use of the following environment variables:
+
+```
+PS_APPSERVER_HOSTNAME
+PS_APPSERVER_JOLTPORT
+PS_APPSERVER_DOMAINPW
+PS_APPSERVER_USERNAME
+PS_APPSERVER_PASSWORD
+```
+
+Then, a static call to `AppServer.fromEnv()` would return an instance of
+`Appserver`.
