@@ -91,12 +91,12 @@ public class CI {
     throw new JOAException("Unable to save object");
   }
 
-  public ProxyObject create(Map<String, Object> data) throws JOAException, PSSDKException {
+  public ProxyObject create(Map<String, Object> data) throws JOAException, PssdkException {
     try {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
       if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
-        throw new PSSDKException("Attempt to create duplicate entry");
+        throw new PssdkException("Attempt to create duplicate entry", iCi.getSession());
       }
 
       // unparse
@@ -107,10 +107,10 @@ public class CI {
       if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
         return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
       }
-      throw new PSSDKException("Unable to save object");
+      throw new PssdkException("Unable to save object", iCi.getSession());
     } catch (JOAException e) {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
-        throw new PSSDKException("Operation CREATE not supported by the CI", e);
+        throw new PssdkException("Operation CREATE not supported by the CI", e, iCi.getSession());
       throw e;
     }
   }
