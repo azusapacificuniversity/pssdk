@@ -6,20 +6,23 @@ import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
+import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
 
 public class CI {
   IObject iCi;
+  ISession iSession;
 
-  public CI(IObject iCi) throws JOAException {
+  public CI(IObject iCi, ISession session) throws JOAException {
     if (iCi == null) {
       throw new JOAException("Unable to Get Component Interface");
     }
     this.iCi = iCi;
+    this.iSession = session;
   }
 
-  public static CI factory(Object obj) throws JOAException {
-    return new CI((IObject) obj);
+  public static CI factory(Object obj, ISession session) throws JOAException {
+    return new CI((IObject) obj, session);
   }
 
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
@@ -96,7 +99,7 @@ public class CI {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
       if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
-        throw new PssdkException("Attempt to create duplicate entry", iCi.getSession());
+        throw new PssdkException("Attempt to create duplicate entry", iSession);
       }
 
       // unparse
@@ -107,10 +110,10 @@ public class CI {
       if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
         return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
       }
-      throw new PssdkException("Unable to save object", iCi.getSession());
+      throw new PssdkException("Unable to save object", iSession);
     } catch (JOAException e) {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
-        throw new PssdkException("Operation CREATE not supported by the CI", e, iCi.getSession());
+        throw new PssdkException("Operation CREATE not supported by the CI", e, iSession);
       throw e;
     }
   }
