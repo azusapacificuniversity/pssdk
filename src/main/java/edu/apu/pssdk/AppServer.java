@@ -58,11 +58,12 @@ public class AppServer {
     return new AppServer(config);
   }
 
-  public CI ciFactory(String ciName) throws JOAException {
+  public CI ciFactory(String ciName) throws JOAException, PssdkException {
     return ciFactory(ciName, new HashMap<String, Boolean>());
   }
 
-  public CI ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
+  public CI ciFactory(String ciName, Map<String, Boolean> options)
+      throws JOAException, PssdkException {
     // ***** Create PeopleSoft Session Object *****
     ISession iSession = API.createSession(false, 0);
 
@@ -73,8 +74,9 @@ public class AppServer {
                 1, strAppServerPath, strUserID, strPassword, null, strDomainConnectionPassword);
 
     if (!establishConnection) {
-      throw new JOAException(
-          "Unable to Connect to the App Server. Please verify your credentials and make sure the App Server is running");
+      throw new PssdkException(
+          "Unable to Connect to the App Server. Please verify your credentials and make sure the App Server is running",
+          iSession);
     }
 
     Session session = new Session(iSession);
