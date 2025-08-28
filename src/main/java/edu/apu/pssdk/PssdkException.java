@@ -43,6 +43,7 @@ public class PssdkException extends Exception {
    */
   public PssdkException(String message, Throwable cause, ISession session) {
     super(message, cause);
+    psMessages = new ArrayList<String>();
     // ***** Display PeopleSoft Error Messages *****
     if (session.getErrorPending() || session.getWarningPending()) {
       IPSMessageCollection oPSMessageCollection;
