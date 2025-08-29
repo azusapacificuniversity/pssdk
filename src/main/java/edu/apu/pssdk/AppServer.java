@@ -3,6 +3,8 @@ package edu.apu.pssdk;
 import com.google.common.base.Strings;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import psft.pt8.joa.API;
 import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
@@ -17,6 +19,8 @@ public class AppServer {
   private String strAppServerPath;
 
   public AppServer(Map<String, String> config) throws JOAException {
+    Logger logger = LoggerFactory.getLogger(AppServer.class);
+    logger.info("Using PSJOA JAR file version " + psft.pt8.net.ND.TOOLS_REL);
     strServerName = config.get("hostname");
     strServerPort = config.get("joltport");
     strDomainConnectionPassword = config.get("domainpw");
@@ -54,11 +58,12 @@ public class AppServer {
     return new AppServer(config);
   }
 
-  public CI ciFactory(String ciName) throws JOAException {
+  public CI ciFactory(String ciName) throws JOAException, PssdkException {
     return ciFactory(ciName, new HashMap<String, Boolean>());
   }
 
-  public CI ciFactory(String ciName, Map<String, Boolean> options) throws JOAException {
+  public CI ciFactory(String ciName, Map<String, Boolean> options)
+      throws JOAException, PssdkException {
     // ***** Create PeopleSoft Session Object *****
     ISession iSession = API.createSession(false, 0);
 
@@ -69,8 +74,9 @@ public class AppServer {
                 1, strAppServerPath, strUserID, strPassword, null, strDomainConnectionPassword);
 
     if (!establishConnection) {
-      throw new JOAException(
-          "Unable to Connect to the App Server. Please verify your credentials and make sure the App Server is running");
+      throw new PssdkException(
+          "Unable to Connect to the App Server. Please verify your credentials and make sure the App Server is running",
+          iSession);
     }
 
     Session session = new Session(iSession);
