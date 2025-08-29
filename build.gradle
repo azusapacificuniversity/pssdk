@@ -18,12 +18,11 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:33.4.8-jre'
     implementation 'org.graalvm.polyglot:polyglot:24.2.2'
-    implementation 'com.oracle.peoplesoft:psjoa:8.60.20'
     implementation 'org.slf4j:slf4j-api:2.0.17'
-    implementation 'ch.qos.logback:logback-classic:1.5.6'
+
+    compileOnly    'com.oracle.peoplesoft:psjoa:8.60.20'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
