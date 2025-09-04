@@ -12,6 +12,15 @@ repositories {
     giteaIntdevRepo(it)
 }
 publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'edu.apu.pssdk'
+            artifactId = rootProject.name
+            version = '1.0.0-SNAPSHOT'
+
+            from components.java
+        }
+    }
     repositories {
         giteaIntdevRepo(it)
     }
