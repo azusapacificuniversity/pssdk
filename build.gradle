@@ -1,19 +1,19 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
-    id("com.gradleup.shadow") version "9.0.2"
+    id 'maven-publish'
     id("com.diffplug.spotless") version "7.2.1"
 }
 
+apply from: "${rootDir}/repositories.gradle"
+
 repositories {
     mavenCentral()
-    maven {
-        name = "gitea-intdev"
-        url = "https://gitea.apu.edu/api/packages/intdev/maven"
-        credentials {
-            username = "intdev"
-            password = "$System.env.MVN_TOKEN"
-        }
+    giteaIntdevRepo(it)
+}
+publishing {
+    repositories {
+        giteaIntdevRepo(it)
     }
 }
 
@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.graalvm.polyglot:polyglot:24.2.2'
     implementation 'org.slf4j:slf4j-api:2.0.17'
 
-    compileOnly    'com.oracle.peoplesoft:psjoa:8.60.20'
+    compileOnly    'com.oracle.peoplesoft:psjoa:8.60.+'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -33,17 +33,17 @@ java {
 }
 
 testing {
-    suites { 
-        test { 
-            useJUnitJupiter() 
+    suites {
+        test {
+            useJUnitJupiter()
         }
 
-        integrationTest(JvmTestSuite) { 
+        integrationTest(JvmTestSuite) {
             dependencies {
-                implementation project() 
+                implementation project()
             }
 
-            targets { 
+            targets {
                 all {
                     testTask.configure {
                         shouldRunAfter(test)
@@ -54,12 +54,16 @@ testing {
     }
 }
 
-tasks.named('check') { 
+tasks.named("compileJava") {
+    dependsOn("spotlessApply")
+}
+
+tasks.named('check') {
     dependsOn(testing.suites.integrationTest)
 }
 
 spotless {
-  java {
-    googleJavaFormat()
-  }
+    java {
+        googleJavaFormat()
+    }
 }
