@@ -5,6 +5,8 @@ plugins {
     id("com.diffplug.spotless") version "7.2.1"
 }
 
+group = 'edu.apu.pssdk'
+version = '1.0.0-SNAPSHOT'
 apply from: "${rootDir}/repositories.gradle"
 
 repositories {
@@ -14,9 +16,9 @@ repositories {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'edu.apu.pssdk'
-            artifactId = rootProject.name
-            version = '1.0.0-SNAPSHOT'
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
 
             from components.java
         }
@@ -74,5 +76,14 @@ tasks.named('check') {
 spotless {
     java {
         googleJavaFormat()
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': project.group + ':' + project.name,
+            'Implementation-Version': project.version
+        )
     }
 }
