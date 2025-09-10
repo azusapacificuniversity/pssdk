@@ -1,0 +1,10 @@
+ext.giteaIntdevRepo = { handler ->
+    handler.maven {
+        name = "gitea-intdev"
+        url = "https://gitea.apu.edu/api/packages/intdev/maven"
+        credentials {
+            username = "intdev"
+            password = "$System.env.MVN_TOKEN"
+        }
+    }
+}
