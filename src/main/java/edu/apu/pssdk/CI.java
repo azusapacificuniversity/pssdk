@@ -91,7 +91,7 @@ public class CI {
       cancel();
       return result;
     }
-    throw new PssdkException("Attempt to create duplicate entry", iSession);
+    throw new PssdkException("Unable to save object", iSession);
   }
 
   public ProxyObject create(Map<String, Object> data) throws JOAException, PssdkException {
@@ -148,6 +148,24 @@ public class CI {
 
   public CI setEditHistoryItems(boolean inEditHistoryItems) throws JOAException {
     iCi.setProperty("EditHistoryItems", inEditHistoryItems);
+    return this;
+  }
+
+  public boolean getGetDummyRows() throws JOAException {
+    return (boolean) iCi.getProperty("GetDummyRows");
+  }
+
+  public CI setGetDummyRows(boolean inGetDummyRows) throws JOAException {
+    iCi.setProperty("GetDummyRows", inGetDummyRows);
+    return this;
+  }
+
+  public boolean getStopOnFirstError() throws JOAException {
+    return (boolean) iCi.getProperty("StopOnFirstError");
+  }
+
+  public CI setStopOnFirstError(boolean inStopOnFirstError) throws JOAException {
+    iCi.setProperty("StopOnFirstError", inStopOnFirstError);
     return this;
   }
 }
