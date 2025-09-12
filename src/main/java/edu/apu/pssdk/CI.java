@@ -71,7 +71,7 @@ public class CI {
     return result;
   }
 
-  public ProxyObject save(Map<String, Object> data) throws JOAException {
+  public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
 
     // use to GET before SAVE
     Map<String, String> getProps = new HashMap<>();
@@ -91,7 +91,7 @@ public class CI {
       cancel();
       return result;
     }
-    throw new JOAException("Unable to save object");
+    throw new PssdkException("Attempt to create duplicate entry", iSession);
   }
 
   public ProxyObject create(Map<String, Object> data) throws JOAException, PssdkException {

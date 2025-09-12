@@ -35,6 +35,9 @@ ARG NPM_TOKEN
 RUN useradd -m -g root app \
  && chmod -R 750 /home/app
 
+// COPY psjoa.jar and other jar files like logback-classic.jar
+COPY lib/* /opt/pssdk/lib/
+
 WORKDIR /home/app
 
 COPY .npmrc package*.json src/ .
@@ -45,7 +48,7 @@ EXPOSE 3000
 
 USER app
 
-CMD ["node", "--jvm", "--vm.cp=/opt/peoplesoft-sdk-all.jar", "src/index.js"]
+CMD ["node", "--jvm", "--vm.cp=/opt/pssdk/lib/*", "src/index.js"]
 ```
 
 ### Environment Variables

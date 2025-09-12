@@ -1,29 +1,39 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
-    id("com.gradleup.shadow") version "9.0.2"
+    id 'maven-publish'
     id("com.diffplug.spotless") version "7.2.1"
 }
 
+group = 'edu.apu.pssdk'
+version = '1.0.0-SNAPSHOT'
+apply from: "${rootDir}/repositories.gradle"
+
 repositories {
     mavenCentral()
-    maven {
-        name = "gitea-intdev"
-        url = "https://gitea.apu.edu/api/packages/intdev/maven"
-        credentials {
-            username = "intdev"
-            password = "$System.env.MVN_TOKEN"
+    giteaIntdevRepo(it)
+}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
         }
+    }
+    repositories {
+        giteaIntdevRepo(it)
     }
 }
 
 dependencies {
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:33.4.8-jre'
     implementation 'org.graalvm.polyglot:polyglot:24.2.2'
-    implementation 'com.oracle.peoplesoft:psjoa:8.60.20'
     implementation 'org.slf4j:slf4j-api:2.0.17'
-    implementation 'ch.qos.logback:logback-classic:1.5.6'
+
+    compileOnly    'com.oracle.peoplesoft:psjoa:8.60.+'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -34,17 +44,17 @@ java {
 }
 
 testing {
-    suites { 
-        test { 
-            useJUnitJupiter() 
+    suites {
+        test {
+            useJUnitJupiter()
         }
 
-        integrationTest(JvmTestSuite) { 
+        integrationTest(JvmTestSuite) {
             dependencies {
-                implementation project() 
+                implementation project()
             }
 
-            targets { 
+            targets {
                 all {
                     testTask.configure {
                         shouldRunAfter(test)
@@ -55,12 +65,25 @@ testing {
     }
 }
 
-tasks.named('check') { 
+tasks.named("compileJava") {
+    dependsOn("spotlessApply")
+}
+
+tasks.named('check') {
     dependsOn(testing.suites.integrationTest)
 }
 
 spotless {
-  java {
-    googleJavaFormat()
-  }
+    java {
+        googleJavaFormat()
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Implementation-Title': project.group + ':' + project.name,
+            'Implementation-Version': project.version
+        )
+    }
 }

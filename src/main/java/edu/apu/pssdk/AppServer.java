@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import psft.pt8.joa.API;
 import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
+import psft.pt8.net.AppServerInfo;
 
 public class AppServer {
 
@@ -20,7 +21,8 @@ public class AppServer {
 
   public AppServer(Map<String, String> config) throws JOAException {
     Logger logger = LoggerFactory.getLogger(AppServer.class);
-    logger.info("Using PSJOA JAR file version " + psft.pt8.net.ND.TOOLS_REL);
+    String version = new AppServerInfo("", "", false, "", false).getToolsRel();
+    logger.info("Using PSJOA JAR file version " + version);
     strServerName = config.get("hostname");
     strServerPort = config.get("joltport");
     strDomainConnectionPassword = config.get("domainpw");
