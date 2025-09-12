@@ -17,6 +17,8 @@ public class Session {
     return CI.factory(oCi, iSession)
         .setInteractiveMode(options.getOrDefault("InteractiveMode", false))
         .setGetHistoryItems(options.getOrDefault("GetHistoryItems", false))
-        .setEditHistoryItems(options.getOrDefault("EditHistoryItems", false));
+        .setEditHistoryItems(options.getOrDefault("EditHistoryItems", false))
+        .setStopOnFirstError(options.getOrDefault("StopOnFirstError", false))
+        .setGetDummyRows(options.getOrDefault("GetDummyRows", true));
   }
 }
