@@ -24,31 +24,62 @@ $ docker push quay.apu.edu/intdev/pssdk
 ### Usage
 
 You can use this project through the GraalJS Node.js project. A container image
-is provided; You can base your project on the image like this:
+is not provided; You need to provide your own `psjoa.jar` file and optionally a
+logger (project support SLF4J) and package everything in a single JAR.
+
+If you use Gradle, an example `build.gradle` would be:
 
 ```
-FROM quay.apu.edu/intdev/pssdk
-MAINTAINER Azusa Pacific University
+plugins {
+    id 'java-library'
+    id("com.gradleup.shadow") version "9.1.0"
+}
 
-ARG NPM_TOKEN
+archivesBaseName = 'pssdk'
+
+repositories {
+    mavenCentral()
+    maven {
+        name "<your-repo-name>"
+        url "https://<your-repo-url>"
+        credentials {
+            username "<your-user>"
+            password "$System.env.YOUR_TOKEN"
+        }
+    }
+}
+
+dependencies {
+    implementation group: 'edu.apu.pssdk', name: 'pssdk', version: '1.0.0-SNAPSHOT'
+    implementation group: 'com.oracle.peoplesoft', name: 'psjoa', version: "$System.env.PSJOA_JAR_VERSION"
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.6'
+}
+```
+
+Then, you can package your application in a Docker image like this:
+
+```
+FROM quay.apu.edu/intdev/graalnodejs
+MAINTAINER Azusa Pacific University
 
 RUN useradd -m -g root app \
  && chmod -R 750 /home/app
 
-// COPY psjoa.jar and other jar files like logback-classic.jar
-COPY lib/* /opt/pssdk/lib/
+COPY build/libs/pssdk-all.jar /opt/pssdk/
 
 WORKDIR /home/app
 
-COPY .npmrc package*.json src/ .
+COPY package*.json ./
 
 RUN npm ci --omit=dev
+
+COPY src src
 
 EXPOSE 3000
 
 USER app
 
-CMD ["node", "--jvm", "--vm.cp=/opt/pssdk/lib/*", "src/index.js"]
+ENTRYPOINT ["node", "--jvm", "--vm.cp=/opt/pssdk/pssdk-all.jar", "src/index.js"]
 ```
 
 ### Environment Variables
@@ -63,5 +94,5 @@ PS_APPSERVER_USERNAME
 PS_APPSERVER_PASSWORD
 ```
 
-Then, a static call to `AppServer.fromEnv()` would return an instance of
-`Appserver`.
+If those environment variables are properly set, a static call to
+`AppServer.fromEnv()` would return an instance of `Appserver`.
