@@ -70,11 +70,16 @@ public class CI {
     return result;
   }
 
-  public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
+  public CI set(Map<String, Object> data) throws JOAException {
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
     root.populateWith(data);
+    return this;
+  }
 
+  public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
+    // unparse
+    if (data != null) this.set(data);
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
@@ -83,28 +88,23 @@ public class CI {
     throw new PssdkException("Unable to save object", iSession);
   }
 
-  public ProxyObject create(Map<String, Object> data) throws JOAException, PssdkException {
+  public CI create(Map<String, Object> data) throws JOAException, PssdkException {
     try {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
       if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
         throw new PssdkException("Attempt to create duplicate entry", iSession);
       }
-
-      // unparse
-      CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
-      root.populateWith(data);
-
-      // invoke save on the CI
-      if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-        return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      }
-      throw new PssdkException("Unable to save object", iSession);
+      return this;
     } catch (JOAException e) {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
         throw new PssdkException("Operation CREATE not supported by the CI", e, iSession);
       throw e;
     }
+  }
+
+  public ProxyObject createAndSave(Map<String, Object> data) throws JOAException, PssdkException {
+    return this.create(data).save(data);
   }
 
   public void cancel() throws JOAException {
