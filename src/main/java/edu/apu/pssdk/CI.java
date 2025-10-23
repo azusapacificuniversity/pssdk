@@ -71,15 +71,6 @@ public class CI {
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
-
-    // use to GET before SAVE
-    Map<String, String> getProps = new HashMap<>();
-    for (PropertyInfo getKey : getGetKeyInfoCollection()) {
-      String keyName = getKey.getName();
-      getProps.put(keyName, (String) data.get(keyName));
-    }
-    this.get(getProps, false);
-
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
     root.populateWith(data);
@@ -87,7 +78,6 @@ public class CI {
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      cancel();
       return result;
     }
     throw new PssdkException("Unable to save object", iSession);
