@@ -67,7 +67,6 @@ public class CI {
     Object[] args = new Object[0];
     ProxyArray result =
         CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection()).toProxy();
-    cancel();
     return result;
   }
 
