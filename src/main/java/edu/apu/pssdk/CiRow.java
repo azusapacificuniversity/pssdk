@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
@@ -11,10 +13,12 @@ import psft.pt8.joa.JOAException;
 public class CiRow {
   IObject iRow;
   PropertyInfoCollection propInfoCol;
+  Logger logger;
 
   public CiRow(IObject iRow, PropertyInfoCollection propInfoCol) throws JOAException {
     this.propInfoCol = propInfoCol;
     this.iRow = iRow;
+    this.logger = LoggerFactory.getLogger(CiRow.class);
   }
 
   public static CiRow factory(Object iRow, CIPropertyInfoCollection propInfoCol)
@@ -52,6 +56,7 @@ public class CiRow {
   }
 
   public CiRow set(String propertyName, Object val) throws JOAException {
+    this.logger.debug(propertyName + ": " + val.toString());
     iRow.setProperty(propertyName, val);
     return this;
   }
