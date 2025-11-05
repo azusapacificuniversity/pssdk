@@ -44,17 +44,12 @@ public class CI {
         (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
   }
 
-  public ProxyObject get(Map<String, String> props) throws JOAException {
-    return this.get(props, true);
-  }
-
-  private ProxyObject get(Map<String, String> props, boolean reset) throws JOAException {
+  private ProxyObject get(Map<String, String> props) throws JOAException {
     for (Map.Entry<String, String> entry : props.entrySet())
       iCi.setProperty(entry.getKey(), entry.getValue());
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // a "CiRow" acting the ROOT for this CI
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      if (reset) cancel(); // reset the CI
       return result;
     }
     throw new JOAException("Unable to get object");
