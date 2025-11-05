@@ -97,8 +97,28 @@ public class CI {
     }
   }
 
-  public ProxyObject createAndSave(Map<String, Object> data) throws JOAException, PssdkException {
+  /**
+   * Helper method to create and then save a new object.
+   *
+   * @param data The data for the new object.
+   * @return A ProxyObject representing the saved object.
+   * @throws JOAException If a JOA error occurs.
+   * @throws PssdkException If a PSDK specific error occurs.
+   */
+  public ProxyObject insert(Map<String, Object> data) throws JOAException, PssdkException {
     return this.create(data).save(data);
+  }
+
+  /**
+   * Helper method to get and then save an object.
+   *
+   * @param data The data for the object to update.
+   * @return A ProxyObject representing the saved object.
+   * @throws JOAException If a JOA error occurs.
+   * @throws PssdkException If a PSDK specific error occurs.
+   */
+  public ProxyObject update(Map<String, Object> data) throws JOAException, PssdkException {
+    return this.get(data).save(data);
   }
 
   public void cancel() throws JOAException {
