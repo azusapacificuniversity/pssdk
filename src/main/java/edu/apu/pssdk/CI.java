@@ -45,9 +45,9 @@ public class CI {
         (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
   }
 
-  private ProxyObject get(Map<String, String> props) throws JOAException {
-    PropertyInfoCollection piKeys = getGetKeyInfoCollection();
-    for (PropertyInfo k : piKeys) iCi.setProperty(k.getName(), props.get(k.getName()));
+  private ProxyObject get(Map<String, Object> props) throws JOAException {
+    CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
+    createRoot.populateWith(props);
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // a "CiRow" acting the ROOT for this CI
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
