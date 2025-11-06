@@ -1,6 +1,7 @@
 package edu.apu.pssdk;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.CIPropertyInfoCollection;
@@ -118,7 +119,11 @@ public class CI {
    * @throws PssdkException If a PSDK specific error occurs.
    */
   public ProxyObject update(Map<String, Object> data) throws JOAException, PssdkException {
-    return this.get(data).save(data);
+    this.get(
+        data.entrySet().stream()
+            .filter(entry -> entry.getValue() instanceof String)
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> (String) entry.getValue())));
+    return this.save(data);
   }
 
   public void cancel() throws JOAException {
