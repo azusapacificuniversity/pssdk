@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'edu.apu.pssdk'
-version = '1.0.1-SNAPSHOT'
+version = '2.0.0-SNAPSHOT'
 apply from: "${rootDir}/repositories.gradle"
 
 repositories {

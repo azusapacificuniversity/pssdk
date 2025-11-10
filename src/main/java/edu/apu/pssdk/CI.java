@@ -1,6 +1,5 @@
 package edu.apu.pssdk;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
@@ -45,17 +44,12 @@ public class CI {
         (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
   }
 
-  public ProxyObject get(Map<String, String> props) throws JOAException {
-    return this.get(props, true);
-  }
-
-  private ProxyObject get(Map<String, String> props, boolean reset) throws JOAException {
-    for (Map.Entry<String, String> entry : props.entrySet())
-      iCi.setProperty(entry.getKey(), entry.getValue());
+  private ProxyObject get(Map<String, Object> props) throws JOAException {
+    CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
+    createRoot.populateWith(props);
     if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
       // a "CiRow" acting the ROOT for this CI
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      if (reset) cancel(); // reset the CI
       return result;
     }
     throw new JOAException("Unable to get object");
@@ -67,55 +61,65 @@ public class CI {
     Object[] args = new Object[0];
     ProxyArray result =
         CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection()).toProxy();
-    cancel();
     return result;
   }
 
-  public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
-
-    // use to GET before SAVE
-    Map<String, String> getProps = new HashMap<>();
-    for (PropertyInfo getKey : getGetKeyInfoCollection()) {
-      String keyName = getKey.getName();
-      getProps.put(keyName, (String) data.get(keyName));
-    }
-    this.get(getProps, false);
-
+  public CI set(Map<String, Object> data) throws JOAException {
     // unparse
     CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
     root.populateWith(data);
+    return this;
+  }
 
+  public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
+    // unparse
+    if (data != null) this.set(data);
     // invoke save on the CI
     if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
       ProxyObject result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      cancel();
       return result;
     }
     throw new PssdkException("Unable to save object", iSession);
   }
 
-  public ProxyObject create(Map<String, Object> data) throws JOAException, PssdkException {
+  public CI create(Map<String, Object> data) throws JOAException, PssdkException {
     try {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
       if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
         throw new PssdkException("Attempt to create duplicate entry", iSession);
       }
-
-      // unparse
-      CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
-      root.populateWith(data);
-
-      // invoke save on the CI
-      if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-        return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      }
-      throw new PssdkException("Unable to save object", iSession);
+      return this;
     } catch (JOAException e) {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
         throw new PssdkException("Operation CREATE not supported by the CI", e, iSession);
       throw e;
     }
+  }
+
+  /**
+   * Helper method to create and then save a new object.
+   *
+   * @param data The data for the new object.
+   * @return A ProxyObject representing the saved object.
+   * @throws JOAException If a JOA error occurs.
+   * @throws PssdkException If a PSDK specific error occurs.
+   */
+  public ProxyObject insert(Map<String, Object> data) throws JOAException, PssdkException {
+    return this.create(data).save(data);
+  }
+
+  /**
+   * Helper method to get and then save an object.
+   *
+   * @param data The data for the object to update.
+   * @return A ProxyObject representing the saved object.
+   * @throws JOAException If a JOA error occurs.
+   * @throws PssdkException If a PSDK specific error occurs.
+   */
+  public ProxyObject update(Map<String, Object> data) throws JOAException, PssdkException {
+    this.get(data);
+    return this.save(data);
   }
 
   public void cancel() throws JOAException {
