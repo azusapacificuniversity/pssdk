@@ -1,5 +1,5 @@
 {
-  "name": "pssdk-sapi",
+  "name": "pssdk-express",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
