@@ -64,11 +64,15 @@ public class CI {
     return result;
   }
 
-  public CI set(Map<String, Object> data) throws JOAException {
-    // unparse
-    CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
-    root.populateWith(data);
-    return this;
+  public CI set(Map<String, Object> data) throws PssdkException {
+    try {
+      // unparse
+      CiRow root = CiRow.factory(iCi, getPropertyInfoCollection());
+      root.populateWith(data);
+      return this;
+    } catch (Exception e) {
+      throw new PssdkException("Unable to save object", e, iSession);
+    }
   }
 
   public ProxyObject save(Map<String, Object> data) throws JOAException, PssdkException {
