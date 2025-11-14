@@ -1,0 +1,18 @@
+services:
+
+  pssdk-sapi:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file: .env
+    environment:
+      ENVIRONMENT: docker-compose
+      LOGGER_HOST: logsrv-prod-1a.fs.apu.edu
+      LOGGER_PORT: 12202
+      LOG_LEVEL: debug
+      PS_AS_HOSTNAME: stu-dev-pub-01.fs.apu.edu
+      PS_AS_JOLTPORT: 9075
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/home/app
