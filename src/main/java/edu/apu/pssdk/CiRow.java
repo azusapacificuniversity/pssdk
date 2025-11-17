@@ -3,7 +3,6 @@ package edu.apu.pssdk;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.graalvm.polyglot.proxy.ProxyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import psft.pt8.joa.CIPropertyInfoCollection;
@@ -94,7 +93,7 @@ public class CiRow {
     return null;
   }
 
-  public ProxyObject toProxy() throws JOAException {
+  public ProxyObjectMap toProxy() throws JOAException {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
@@ -113,7 +112,7 @@ public class CiRow {
         result.put(propName, propVal);
       }
     }
-    return ProxyObject.fromMap(result);
+    return new ProxyObjectMap(result);
   }
 
   @SuppressWarnings("unchecked")
