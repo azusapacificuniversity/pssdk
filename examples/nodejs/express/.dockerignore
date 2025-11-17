@@ -1,0 +1,13 @@
+.cache
+.git
+ansible
+node_modules
+tests
+.drone.yml
+.env
+.eslintrc.js
+.gitignore
+.sample.env
+docker-compose.yml
+README.md
+renovate.json

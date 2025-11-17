@@ -1,0 +1,22 @@
+plugins {
+    id 'java-library'
+    id("com.gradleup.shadow") version "9.1.0"
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name "gitea-intdev"
+        url "https://gitea.apu.edu/api/packages/intdev/maven"
+        credentials {
+            username "intdev"
+            password "$System.env.MVN_TOKEN"
+        }
+    }
+}
+
+dependencies {
+    implementation group: 'edu.apu.pssdk', name: 'pssdk', version: '2.0.0-SNAPSHOT'
+    implementation group: 'com.oracle.peoplesoft', name: 'psjoa', version: "$System.env.PSJOA_JAR_VERSION"
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
+}

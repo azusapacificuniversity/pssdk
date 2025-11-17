@@ -1,0 +1,20 @@
+services:
+
+  pssdk-example-express:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        NPM_TOKEN: $NPM_TOKEN
+    env_file: .env
+    environment:
+      ENVIRONMENT: docker-compose
+      LOGGER_HOST: logsrv-prod-1a.fs.apu.edu
+      LOGGER_PORT: 12202
+      LOG_LEVEL: debug
+      PS_AS_HOSTNAME: stu-dev-pub-01.fs.apu.edu
+      PS_AS_JOLTPORT: 9075
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/app
