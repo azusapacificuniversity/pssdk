@@ -1,10 +1,10 @@
 """
-FastAPI application to interact with PeopleSoft Component Interfaces.
+Flask application to interact with PeopleSoft Component Interfaces.
 """
 import java
-from fastapi import FastAPI
+from flask import Flask, jsonify
 
-app = FastAPI()
+app = Flask(__name__)
 
 AppServer = java.type('edu.apu.pssdk.AppServer')
 appServer = AppServer.fromEnv()
@@ -26,7 +26,7 @@ def component_interface(ci_name: str, opts: dict = None):
     return appServer.ciFactory(ci_name, opts)
 
 
-@app.get('/api/v1/profiles/{userid}')
+@app.route('/api/v1/profiles/<string:userid>')
 def get_user_profile(userid: str):
     """
     Returns the Peoplesoft user profile for the user ID as JSON.
@@ -37,13 +37,16 @@ def get_user_profile(userid: str):
     Returns:
         dict: A dictionary containing the user profile data.
     """
-    return dict(component_interface("USER_PROFILE")
-                .get({"UserID": userid}))
+    profile = component_interface("USER_PROFILE").get({"UserID": userid})
+    return jsonify(profile)
 
 
-@app.get('/')
+@app.route('/')
 def root():
     """
     Handles requests to the root URL.
     """
     return 'root'
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')

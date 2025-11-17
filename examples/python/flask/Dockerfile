@@ -5,8 +5,7 @@ WORKDIR /home/app
 
 COPY requirements.txt .
 
-RUN graalpy -m ensurepip --default-pip && \
-    graalpy -m pip install -r requirements.txt
+RUN graalpy -m pip install -r requirements.txt
 
 COPY build/libs/pssdk-example-flask-all.jar /opt/pssdk/
 
