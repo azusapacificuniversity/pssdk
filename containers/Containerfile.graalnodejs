@@ -1,0 +1,34 @@
+FROM opensuse/leap
+
+RUN zypper update -y -l \
+ && zypper install -y gzip tar \
+ && zypper clean -a
+
+ARG GRAALJS_VERSION=25.0.1 \
+    GRAALJS_BASEURL=https://github.com/oracle/graaljs/releases/download/graal-$GRAALJS_VERSION/ \
+    GRAALJS_BASENAME=graalnodejs-community-jvm-$GRAALJS_VERSION-linux-amd64 \
+    GRAALJS_FILE=$GRAALJS_BASENAME.tar.gz \
+    GRAALJS_LINK=$GRAALJS_BASEURL$GRAALJS_FILE \
+    GRAALJS_UNTAR_FOLDER=/opt/$GRAALJS_BASENAME
+
+ENV LANG=en_US.UTF-8 \
+    GRAALJS_HOME=/opt/graalnodejs \
+    JAVA_HOME=/opt/graalnodejs/jvm
+
+WORKDIR /opt
+
+RUN set -eux \
+ && curl -L -O $GRAALJS_LINK \
+ && tar -xzf $GRAALJS_FILE \
+ && rm $GRAALJS_FILE \
+ && mv $GRAALJS_UNTAR_FOLDER $GRAALJS_HOME \
+ && for path in "$JAVA_HOME/bin/"*; do \
+      file="$(basename "$path")"; \
+      [ ! -e "/usr/bin/$file" ]; \
+      alternatives --install "/usr/bin/$file" "$file" "$path" 20000; \
+    done \
+ && for path in "$GRAALJS_HOME/bin/"*; do \
+      file="$(basename "$path")"; \
+      [ ! -e "/usr/bin/$file" ]; \
+      alternatives --install "/usr/bin/$file" "$file" "$path" 20000; \
+    done
