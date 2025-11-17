@@ -1,0 +1,36 @@
+FROM opensuse/leap
+
+RUN zypper update -y -l \
+ && zypper install -y gzip tar \
+ && zypper clean -a
+
+ARG GRAALPY_VERSION=25.0.1 \
+    GRAALPY_BASEURL=https://github.com/oracle/graalpython/releases/download/graal-$GRAALPY_VERSION/ \
+    GRAALPY_BASENAME=graalpy-community-jvm-$GRAALPY_VERSION-linux-amd64 \
+    GRAALPY_FILE=$GRAALPY_BASENAME.tar.gz \
+    GRAALPY_LINK=$GRAALPY_BASEURL$GRAALPY_FILE \
+    GRAALPY_UNTAR_FOLDER=/opt/$GRAALPY_BASENAME
+
+ENV LANG=en_US.UTF-8 \
+    GRAALPY_HOME=/opt/graalpy \
+    JAVA_HOME=/opt/graalpy/jvm
+
+WORKDIR /opt
+
+RUN set -eux \
+ && curl -L -O $GRAALPY_LINK \
+ && tar -xzf $GRAALPY_FILE \
+ && rm $GRAALPY_FILE \
+ && mv $GRAALPY_UNTAR_FOLDER $GRAALPY_HOME \
+ && for path in "$JAVA_HOME/bin/"*; do \
+      file="$(basename "$path")"; \
+      [ ! -e "/usr/bin/$file" ]; \
+      alternatives --install "/usr/bin/$file" "$file" "$path" 20000; \
+    done \
+ && for path in "$GRAALPY_HOME/bin/"*; do \
+      file="$(basename "$path")"; \
+      [ ! -e "/usr/bin/$file" ]; \
+      alternatives --install "/usr/bin/$file" "$file" "$path" 20000; \
+    done
+
+RUN graalpy -m ensurepip --default-pip
