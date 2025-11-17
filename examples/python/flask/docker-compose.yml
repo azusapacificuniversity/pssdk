@@ -1,6 +1,6 @@
 services:
 
-  pssdk-sapi:
+  pssdk-example-flask:
     build:
       context: .
       dockerfile: ./Dockerfile

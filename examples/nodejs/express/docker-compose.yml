@@ -1,6 +1,6 @@
 services:
 
-  pssdk-sapi:
+  pssdk-example-express:
     build:
       context: .
       dockerfile: ./Dockerfile

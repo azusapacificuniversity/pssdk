@@ -12,7 +12,7 @@ COPY package*.json .
 
 RUN npm i
 
-COPY build/libs/pssdk-express-all.jar /opt/pssdk/
+COPY build/libs/pssdk-example-express-all.jar /opt/pssdk/
 
 COPY src src
 
@@ -25,7 +25,7 @@ ENTRYPOINT [ \
   "--jvm", \
   "--vm.Dlogback.statusListenerClass=ch.qos.logback.core.status.OnConsoleStatusListener", \
   "--vm.DTM_ALLOW_NOTLS=Y", \
-  "--vm.cp=/opt/pssdk/pssdk-express-all.jar", \
+  "--vm.cp=/opt/pssdk/pssdk-example-express-all.jar", \
   "src/index.js", \
   "--no-opt" \
 ]
