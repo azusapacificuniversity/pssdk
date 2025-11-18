@@ -1,6 +1,10 @@
-# peoplesoft-sdk
+# pssdk
 
-A Java library to consume Peoplesoft Component Interfaces via GraalVM's Node.js runtime
+Interact with Peoplesoft Component Interfaces using JavaScript and Python!
+
+Without the Integration Broker!
+
+You need to provide the psjoa.jar file yourself.
 
 ### Building
 
@@ -97,6 +101,21 @@ PS_APPSERVER_PASSWORD
 If those environment variables are properly set, a static call to
 `AppServer.fromEnv()` would return an instance of `Appserver`.
 
-> [!NOTE]
-> PeopleSoft® is registered trademarks of Oracle Corporation and/or its
-> affiliates. Other names may be trademarks of their respective owners. 
+> [!NOTE] Legal Disclaimer:
+>
+> GraalVM™, Java™, Oracle™, PeopleSoft™ are registered trademarks of
+> Oracle Corporation and/or its affiliates. Other names may be trademarks of
+> their respective owners. This project is not associated with, endorsed by,
+> or sponsored by Oracle Corporation.
+>
+> - GraalVM: GraalVM is a high-performance runtime that provides significant
+> improvements in application performance and efficiency. GraalVM is the
+> intellectual property of Oracle Corporation.
+> 
+> - Java: Java is a registered trademark of Oracle Corporation in the United States
+> and other countries.
+> 
+> - Oracle: Oracle is a registered trademark and is often associated with various
+> software products and services.
+> 
+> - PeopleSoft: PeopleSoft is a registered trademark of Oracle Corporation.
