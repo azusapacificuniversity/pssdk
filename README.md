@@ -98,5 +98,5 @@ If those environment variables are properly set, a static call to
 `AppServer.fromEnv()` would return an instance of `Appserver`.
 
 > [!NOTE]
-> PeopleSoft are registered trademarks of Oracle Corporation and/or its
+> PeopleSoft® is registered trademarks of Oracle Corporation and/or its
 > affiliates. Other names may be trademarks of their respective owners. 
