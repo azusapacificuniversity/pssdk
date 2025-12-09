@@ -1,0 +1,35 @@
+{
+  "name": "pssdk",
+  "version": "3.0.0-alpha.1",
+  "description": "PSSDK to Integrate with Peoplesoft Component Interfaces via GraalNodeJs",
+  "keywords": [
+    "pssdk",
+    "peoplesoft",
+    "component",
+    "interfaces",
+    "graal",
+    "graalvm",
+    "graalnodejs",
+    "graaljs",
+    "ci",
+    "nodejs"
+  ],
+  "homepage": "https://github.com/azusapacificuniversity/pssdk#readme",
+  "bugs": {
+    "url": "https://github.com/azusapacificuniversity/pssdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azusapacificuniversity/pssdk.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Azusa Pacific University",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "piscina": "^5.1.4"
+  }
+}
