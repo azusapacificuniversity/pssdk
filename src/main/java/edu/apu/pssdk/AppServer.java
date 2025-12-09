@@ -1,6 +1,5 @@
 package edu.apu.pssdk;
 
-import com.google.common.base.Strings;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -12,35 +11,28 @@ import psft.pt8.net.AppServerInfo;
 
 public class AppServer {
 
-  private String strServerName;
-  private String strServerPort;
   private String strDomainConnectionPassword;
   private String strUserID;
   private String strPassword;
   private String strAppServerPath;
+  private Logger logger = LoggerFactory.getLogger(AppServer.class);
 
-  public AppServer(Map<String, String> config) throws JOAException {
-    Logger logger = LoggerFactory.getLogger(AppServer.class);
+  public AppServer(Map<String, String> config) throws RuntimeException {
     String version = new AppServerInfo("", "", false, "", false).getToolsRel();
     logger.info("Using PSJOA JAR file version " + version);
-    strAppServerPath = config.get("hostport");
-    strDomainConnectionPassword = config.get("domainpw");
-    strUserID = config.get("username");
-    strPassword = config.get("password");
-    if (Strings.isNullOrEmpty(strServerName)
-        || Strings.isNullOrEmpty(strServerPort)
-        || Strings.isNullOrEmpty(strUserID)
-        || Strings.isNullOrEmpty(strPassword)) {
-      throw new JOAException(
-          "Connect information provided is incomplete. Please provide all necessary environment variables. "
+    strAppServerPath = config.getOrDefault("hostport", "");
+    strDomainConnectionPassword = config.getOrDefault("domainpw", "");
+    strUserID = config.getOrDefault("username", "");
+    strPassword = config.getOrDefault("password", "");
+    if ((strAppServerPath.isBlank()) || strUserID.isBlank() || strPassword.isBlank()) {
+      throw new RuntimeException(
+          "Connection information incomplete: Please provide all necessary environment variables. "
               + "AppServerPath (host:port): "
-              + Strings.nullToEmpty(strAppServerPath)
+              + strAppServerPath
               + ", UserID: "
-              + Strings.nullToEmpty(strUserID)
+              + strUserID
               + ", Password: "
-              + (Strings.isNullOrEmpty(strPassword)
-                  ? "[not provided]"
-                  : "*".repeat(strPassword.length())));
+              + (strPassword.isBlank() ? "[not provided]" : "*".repeat(strPassword.length())));
     }
   }
 
@@ -64,7 +56,7 @@ public class AppServer {
     ISession iSession = API.createSession(false, 0);
 
     Boolean establishConnection =
-        (Strings.isNullOrEmpty(strDomainConnectionPassword))
+        (strDomainConnectionPassword.isBlank())
             ? iSession.connect(1, strAppServerPath, strUserID, strPassword, null)
             : iSession.connectS(
                 1, strAppServerPath, strUserID, strPassword, null, strDomainConnectionPassword);

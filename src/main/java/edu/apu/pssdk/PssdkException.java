@@ -1,6 +1,5 @@
 package edu.apu.pssdk;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringJoiner;
@@ -73,8 +72,9 @@ public class PssdkException extends Exception {
    */
   @Override
   public String getMessage() {
-    StringJoiner sj = new StringJoiner("\n", Strings.nullToEmpty(super.getMessage()) + "\n", "");
-    sj.setEmptyValue(Strings.nullToEmpty(super.getMessage()));
+    String mainMessage = super.getMessage() == null ? "" : super.getMessage();
+    StringJoiner sj = new StringJoiner("\n", mainMessage + "\n", "");
+    sj.setEmptyValue(mainMessage);
     if (psMessages != null && !psMessages.isEmpty()) {
       sj.add("Messages gathered from PeopleSoft session:");
       psMessages.forEach(sj::add);
