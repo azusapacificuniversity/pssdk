@@ -91,8 +91,7 @@ ENTRYPOINT ["node", "--jvm", "--vm.cp=/opt/pssdk/pssdk-all.jar", "src/index.js"]
 The project can make use of the following environment variables:
 
 ```
-PS_APPSERVER_HOSTNAME
-PS_APPSERVER_JOLTPORT
+PS_APPSERVER_HOSTPORT
 PS_APPSERVER_DOMAINPW
 PS_APPSERVER_USERNAME
 PS_APPSERVER_PASSWORD
@@ -100,6 +99,10 @@ PS_APPSERVER_PASSWORD
 
 If those environment variables are properly set, a static call to
 `AppServer.fromEnv()` would return an instance of `Appserver`.
+
+Otherwise, you can create an instance of `AppServer` manually by providing
+the required parameters as a `Map<String, String>` or a config object from
+JavaScript.
 
 > [!NOTE] Legal Disclaimer:
 >

@@ -23,8 +23,7 @@ public class AppServer {
     Logger logger = LoggerFactory.getLogger(AppServer.class);
     String version = new AppServerInfo("", "", false, "", false).getToolsRel();
     logger.info("Using PSJOA JAR file version " + version);
-    strServerName = config.get("hostname");
-    strServerPort = config.get("joltport");
+    strAppServerPath = config.get("hostport");
     strDomainConnectionPassword = config.get("domainpw");
     strUserID = config.get("username");
     strPassword = config.get("password");
@@ -34,10 +33,8 @@ public class AppServer {
         || Strings.isNullOrEmpty(strPassword)) {
       throw new JOAException(
           "Connect information provided is incomplete. Please provide all necessary environment variables. "
-              + "ServerName: "
-              + Strings.nullToEmpty(strServerName)
-              + ", ServerPort: "
-              + Strings.nullToEmpty(strServerPort)
+              + "AppServerPath (host:port): "
+              + Strings.nullToEmpty(strAppServerPath)
               + ", UserID: "
               + Strings.nullToEmpty(strUserID)
               + ", Password: "
@@ -45,14 +42,11 @@ public class AppServer {
                   ? "[not provided]"
                   : "*".repeat(strPassword.length())));
     }
-    // Build Application Server Path
-    strAppServerPath = strServerName + ":" + strServerPort;
   }
 
   public static AppServer fromEnv() throws JOAException {
     Map<String, String> config = new HashMap<>();
-    config.put("hostname", System.getenv("PS_APPSERVER_HOSTNAME"));
-    config.put("joltport", System.getenv("PS_APPSERVER_JOLTPORT"));
+    config.put("hostport", System.getenv("PS_APPSERVER_HOSTPORT"));
     config.put("domainpw", System.getenv("PS_APPSERVER_DOMAINPW"));
     config.put("username", System.getenv("PS_APPSERVER_USERNAME"));
     config.put("password", System.getenv("PS_APPSERVER_PASSWORD"));
