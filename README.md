@@ -6,26 +6,15 @@ Without the Integration Broker!
 
 You need to provide the psjoa.jar file yourself.
 
-### Building
-
-Run Gradle with the `shadowJar` task to have a single jar build.
-
-```
-$ ./gradlew clean build shadowJar
-```
-
-Build with docker:
-
-```
-$ docker build . -t quay.apu.edu/intdev/pssdk
-```
-
-And finally push the image to Quay:
-```
-$ docker push quay.apu.edu/intdev/pssdk
-```
-
 ### Usage
+
+```javascript
+const ci = AppServer.ci('MY_CI_NAME');
+const result = ci.get({ PARAM1: 'value1', PARAM2: 'value2' });
+console.log(result);
+```
+
+### Setup
 
 You can use this project through the GraalJS Node.js project. A container image
 is not provided; You need to provide your own `psjoa.jar` file and optionally a
@@ -86,13 +75,20 @@ USER app
 ENTRYPOINT ["node", "--jvm", "--vm.cp=/opt/pssdk/pssdk-all.jar", "src/index.js"]
 ```
 
+### Building the Java project
+
+Run Gradle with the `shadowJar` task to have a single jar build.
+
+```
+$ ./gradlew clean build shadowJar
+```
+
 ### Environment Variables
 
 The project can make use of the following environment variables:
 
 ```
-PS_APPSERVER_HOSTNAME
-PS_APPSERVER_JOLTPORT
+PS_APPSERVER_HOSTPORT
 PS_APPSERVER_DOMAINPW
 PS_APPSERVER_USERNAME
 PS_APPSERVER_PASSWORD
@@ -101,7 +97,24 @@ PS_APPSERVER_PASSWORD
 If those environment variables are properly set, a static call to
 `AppServer.fromEnv()` would return an instance of `Appserver`.
 
-> [!NOTE] Legal Disclaimer:
+Otherwise, you can create an instance of `AppServer` manually by providing
+the required parameters as a `Map<String, String>` or a config object from
+JavaScript.
+
+```javascript
+const { AppServer } = require('pssdk');
+const appServer = new AppServer({
+    hostPort: 'myserver:9000',
+    domainPw: 'mypassword',
+    username: 'myuser',
+    password: 'mypassword'
+});
+```
+
+```markdown
+> [!NOTE]
+>
+> Legal Disclaimer:
 >
 > GraalVM™, Java™, Oracle™, PeopleSoft™ are registered trademarks of
 > Oracle Corporation and/or its affiliates. Other names may be trademarks of

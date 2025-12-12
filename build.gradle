@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'edu.apu.pssdk'
-version = '2.0.0'
+version = '3.0.0-SNAPSHOT'
 apply from: "${rootDir}/repositories.gradle"
 
 repositories {
@@ -29,7 +29,6 @@ publishing {
 }
 
 dependencies {
-    implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'org.graalvm.polyglot:polyglot:25.0.1'
     implementation 'org.slf4j:slf4j-api:2.0.17'
 
