@@ -140,8 +140,8 @@ public class CI {
   /*********************************/
 
   /**
-   * Gets the data out of the CI as an object that is native to the GraalVM client language.
-   * The data returned should be easily serializable to JSON or other formats.
+   * Gets the data out of the CI as an object that is native to the GraalVM client language. The
+   * data returned should be easily serializable to JSON or other formats.
    *
    * @return A ProxyObject representing the data in the CI.
    * @throws JOAException If a JOA error occurs.
@@ -170,59 +170,6 @@ public class CI {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
     }
-  }
-
-  /*********************************/
-  /******** HELPER METHODS *********/
-  /*********************************/
-
-  /**
-   * Helper method to get a new object and return its data.
-   *
-   * @param data The data for the new object.
-   * @return A ProxyObjectMap representing the object.
-   * @throws PssdkException If a PSDK specific error occurs.
-   */
-  public ProxyObjectMap fetch(Map<String, Object> data) throws PssdkException {
-    try {
-      return this.get(data).toData();
-    } finally {
-      this.cancel();
-    }
-  }
-
-  /**
-   * Helper method to create and then save a new object.
-   *
-   * @param data The data for the new object.
-   * @return A ProxyObjectMap representing the saved object.
-   * @throws PssdkException If a PSDK specific error occurs.
-   */
-  public ProxyObjectMap add(Map<String, Object> data) throws PssdkException {
-    try {
-      return this.create(data).save(data).toData();
-    } finally {
-      this.cancel();
-    }
-  }
-
-  /**
-   * Helper method to get and then save an object.
-   *
-   * @param data The data for the object to update.
-   * @return A ProxyObject representing the saved object.
-   * @throws PssdkException If a PSDK specific error occurs.
-   */
-  public ProxyObjectMap update(Map<String, Object> data) throws PssdkException {
-    try {
-      return this.get(data).save(data).toData();
-    } finally {
-      this.cancel();
-    }
-  }
-
-  public ProxyArray search(Map<String, Object> data) throws JOAException, PssdkException {
-    return this.find(data).toList();
   }
 
   /*********************************/
