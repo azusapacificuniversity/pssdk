@@ -7,10 +7,7 @@ import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyHashMap;
 import org.graalvm.polyglot.proxy.ProxyObject;
 
-/**
- * A class that acts as both a ProxyObject and a ProxyHashMap,
- * backed by a standard Java Map.
- */
+/** A class that acts as both a ProxyObject and a ProxyHashMap, backed by a standard Java Map. */
 public class ProxyObjectMap implements ProxyObject, ProxyHashMap {
 
   private final Map<String, Object> map;

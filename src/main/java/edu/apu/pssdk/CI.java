@@ -2,6 +2,7 @@ package edu.apu.pssdk;
 
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
@@ -23,6 +24,10 @@ public class CI {
     return new CI((IObject) obj, session);
   }
 
+  /*********************************/
+  /***** PROPERTY COLLECTIONS ******/
+  /*********************************/
+
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
     return PropertyInfoCollection.factory(
         (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection"));
@@ -43,24 +48,22 @@ public class CI {
         (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
   }
 
-  public ProxyObjectMap get(Map<String, Object> props) throws JOAException {
-    CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
-    createRoot.populateWith(props);
-    if (((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
-      // a "CiRow" acting the ROOT for this CI
-      ProxyObjectMap result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      return result;
-    }
-    throw new JOAException("Unable to get object");
-  }
+  /*********************************/
+  /****** STANDARD METHODS ********/
+  /*********************************/
 
-  public ProxyArray find(Map<String, String> props) throws JOAException {
-    for (Map.Entry<String, String> entry : props.entrySet())
-      iCi.setProperty(entry.getKey(), entry.getValue());
-    Object[] args = new Object[0];
-    ProxyArray result =
-        CiScroll.factory(iCi.invokeMethod("Find", args), getFindPropertyInfoCollection()).toProxy();
-    return result;
+  public CI get(Map<String, Object> props) throws PssdkException {
+    try {
+      CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
+      createRoot.populateWith(props);
+      if (!((Boolean) (iCi.invokeMethod("Get", new Object[0]))).booleanValue()) {
+        throw new PssdkException("Unable to perform get on CI.", iSession);
+      }
+      return this;
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to perform get on CI. Original error enclosed.", e, iSession);
+    }
   }
 
   public CI set(Map<String, Object> data) throws PssdkException {
@@ -70,66 +73,127 @@ public class CI {
       root.populateWith(data);
       return this;
     } catch (Exception e) {
-      throw new PssdkException("Unable to save object", e, iSession);
+      throw new PssdkException("Unable to set data on CI. Original error enclosed.", e, iSession);
     }
   }
 
-  public ProxyObjectMap save(Map<String, Object> data) throws JOAException, PssdkException {
-    // unparse
-    if (data != null) this.set(data);
-    // invoke save on the CI
-    if (((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
-      ProxyObjectMap result = CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
-      return result;
+  public CI find(Map<String, Object> props) throws PssdkException {
+    try {
+      for (Map.Entry<String, Object> entry : props.entrySet())
+        iCi.setProperty(entry.getKey(), entry.getValue());
+      Object[] args = new Object[0];
+      if (!((Boolean) (iCi.invokeMethod("Find", args))).booleanValue()) {
+        throw new PssdkException("Unable to do a find on the CI.", iSession);
+      }
+      return this;
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to do a find on the CI. Original error enclosed.", e, iSession);
     }
-    throw new PssdkException("Unable to save object", iSession);
   }
 
-  public CI create(Map<String, Object> data) throws JOAException, PssdkException {
+  public CI save(Map<String, Object> data) throws PssdkException {
+    try {
+      // unparse
+      if (data != null) this.set(data);
+      // invoke save on the CI
+      if (!((Boolean) (iCi.invokeMethod("Save", new Object[0]))).booleanValue()) {
+        throw new PssdkException("Unable to save object", iSession);
+      }
+      return this;
+    } catch (JOAException e) {
+      throw new PssdkException("Unable to save object. Original error enclosed.", e, iSession);
+    }
+  }
+
+  public CI create(Map<String, Object> data) throws PssdkException {
     try {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
       if (!((Boolean) (iCi.invokeMethod("Create", new Object[0]))).booleanValue()) {
-        throw new PssdkException("Attempt to create duplicate entry", iSession);
+        throw new PssdkException(
+            "Can not perform Operation CREATE on the CI. Probably, an attempt to create duplicate entry",
+            iSession);
       }
       return this;
     } catch (JOAException e) {
       if (e.getMessage().contains("Distributed Object Manager: Page=Create"))
         throw new PssdkException("Operation CREATE not supported by the CI", e, iSession);
-      throw e;
+      throw new PssdkException(
+          "Can not perform Operation CREATE on the CI. Original error enclosed.", e, iSession);
     }
   }
 
   /**
-   * Helper method to create and then save a new object.
+   * Invokes the standard CANCEL method on the CI and closes the CI session.
    *
-   * @param data The data for the new object.
-   * @return A ProxyObject representing the saved object.
-   * @throws JOAException If a JOA error occurs.
-   * @throws PssdkException If a PSDK specific error occurs.
+   * @throws PssdkException If unable to cancel the CI.
    */
-  public ProxyObjectMap insert(Map<String, Object> data) throws JOAException, PssdkException {
-    return this.create(data).save(data);
+  public void cancel() throws PssdkException {
+    try {
+      if (!((Boolean) (iCi.invokeMethod("Cancel", new Object[0]))).booleanValue()) {
+        throw new PssdkException("Operation CANCEL failed.", iSession);
+      }
+      this.close();
+      iCi = null;
+    } catch (JOAException e) {
+      throw new PssdkException("Operation CANCEL failed. Original error enclosed.", e, iSession);
+    }
   }
 
   /**
-   * Helper method to get and then save an object.
+   * Closes the CI session.
    *
-   * @param data The data for the object to update.
-   * @return A ProxyObject representing the saved object.
-   * @throws JOAException If a JOA error occurs.
-   * @throws PssdkException If a PSDK specific error occurs.
+   * @throws PssdkException If unable to close the Session which created the CI.
    */
-  public ProxyObjectMap update(Map<String, Object> data) throws JOAException, PssdkException {
-    this.get(data);
-    return this.save(data);
+  public void close() throws PssdkException {
+    if (!iSession.disconnect()) {
+      throw new PssdkException("Operation CANCEL failed.", iSession);
+    }
+    iSession = null;
+    return;
   }
 
-  public void cancel() throws JOAException {
-    if (!((Boolean) (iCi.invokeMethod("Cancel", new Object[0]))).booleanValue()) {
-      throw new JOAException("Operation CANCEL failed.");
+  /*********************************/
+  /*********** TO DATA *************/
+  /*********************************/
+
+  /**
+   * Gets the data out of the CI as an object that is native to the GraalVM client language. The
+   * data returned should be easily serializable to JSON or other formats.
+   *
+   * @return A ProxyObject representing the data in the CI.
+   * @throws JOAException If a JOA error occurs.
+   */
+  public ProxyObject toJSON() throws PssdkException {
+    try {
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to get data out of the CI. Original error enclosed.", e, iSession);
     }
   }
+
+  /**
+   * Gets the data out of the CI as a list/array that is native to your language. The data returned
+   * should be easily serializable to JSON or other formats. This method is intended for use after a
+   * Find operation.
+   *
+   * @return A ProxyArray representing the data in the CI.
+   * @throws JOAException If a JOA error occurs.
+   */
+  public ProxyArray toList() throws PssdkException {
+    try {
+      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxy();
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
+    }
+  }
+
+  /*********************************/
+  /********** CI OPTIONS ***********/
+  /*********************************/
 
   public boolean getInteractiveMode() throws JOAException {
     return (boolean) iCi.getProperty("InteractiveMode");
