@@ -124,15 +124,34 @@ public class CI {
     }
   }
 
-  public CI cancel() throws PssdkException {
+  /**
+   * Invokes the standard CANCEL method on the CI and closes the CI session.
+   *
+   * @throws PssdkException If unable to cancel the CI.
+   */
+  public void cancel() throws PssdkException {
     try {
       if (!((Boolean) (iCi.invokeMethod("Cancel", new Object[0]))).booleanValue()) {
         throw new PssdkException("Operation CANCEL failed.", iSession);
       }
-      return this;
+      this.close();
+      iCi = null;
     } catch (JOAException e) {
       throw new PssdkException("Operation CANCEL failed. Original error enclosed.", e, iSession);
     }
+  }
+
+  /**
+   * Closes the CI session.
+   *
+   * @throws PssdkException If unable to close the Session which created the CI.
+   */
+  public void close() throws PssdkException {
+    if (!iSession.disconnect()) {
+      throw new PssdkException("Operation CANCEL failed.", iSession);
+    }
+    iSession = null;
+    return;
   }
 
   /*********************************/
