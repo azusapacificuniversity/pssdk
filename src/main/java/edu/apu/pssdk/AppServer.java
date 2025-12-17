@@ -11,16 +11,8 @@ import psft.pt8.net.AppServerInfo;
 
 /**
  * Main class to be called from client languages (Node.js, Python) to configure and connect to a
- * PeopleSoft Application Server.
- *
- * <p>Uses environment variables or a configuration map to set connection parameters.
- *
- * <p>Provides a factory method to create CI objects.
- *
- * <p>Usage:
- *
- * <p>```js const appServer = AppServer.fromEnv(); const ci = appServer.ciFactory("CI_NAME");
- * ci.get({ PARAM1: "value1", PARAM2: "value2" }); ```
+ * PeopleSoft Application Server. Uses environment variables or a configuration map to set
+ * connection parameters. Provides a factory method to create CI objects.
  */
 public class AppServer {
 
@@ -33,9 +25,14 @@ public class AppServer {
   /**
    * Constructor to initialize AppServer with configuration parameters.
    *
-   * @param config Map containing connection parameters: - hostport: App Server host and port -
-   *     domainpw: Domain connection password (optional) - username: User ID - password: User
-   *     password
+   * @param config Map containing connection parameters:
+   *     <ul>
+   *       <li>- hostport: App Server host and port
+   *       <li>- username: User ID
+   *       <li>- password: User password
+   *       <li>- domainpw: Domain connection password (optional)
+   *     </ul>
+   *
    * @throws RuntimeException if required parameters are missing
    */
   public AppServer(Map<String, String> config) throws RuntimeException {
@@ -60,11 +57,20 @@ public class AppServer {
   /**
    * Static method to create AppServer instance from environment variables.
    *
-   * <p>Required environment variables: - PS_APPSERVER_HOSTPORT: host:port of the App Server,
-   * separate by comma for multiple servers, ex: "appserver1:9000,appserver2:9000" -
-   * PS_APPSERVER_USERNAME: user ID - PS_APPSERVER_PASSWORD: user password
+   * <p>Required environment variables:
    *
-   * <p>Optional environment variable: - PS_APPSERVER_DOMAINPW: domain connection password
+   * <ul>
+   *   <li>- PS_APPSERVER_HOSTPORT: host:port of the App Server, separate by comma for multiple
+   *       servers, ex: "appserver1:9000,appserver2:9000"
+   *   <li>- PS_APPSERVER_USERNAME: user ID
+   *   <li>- PS_APPSERVER_PASSWORD: user password
+   * </ul>
+   *
+   * <p>Optional environment variable:
+   *
+   * <ul>
+   *   <li>- PS_APPSERVER_DOMAINPW: domain connection password
+   * </ul>
    *
    * @return AppServer instance
    * @throws RuntimeException if instantiation fails
@@ -84,8 +90,8 @@ public class AppServer {
    *
    * @param ciName Name of the CI to create
    * @return CI object
-   * @throws JOAException
-   * @throws PssdkException
+   * @throws JOAException when JOAEception occurs
+   * @throws PssdkException when PssdkException occurs
    */
   public CI ciFactory(String ciName) throws JOAException, PssdkException {
     return ciFactory(ciName, new HashMap<String, Boolean>());
@@ -95,15 +101,18 @@ public class AppServer {
    * Factory method to create CI objects.
    *
    * @param ciName Name of the CI to create
-   * @param options Map of options for CI creation, supported options: - "InteractiveMode": Boolean
-   *     to enable/disable interactive mode (default: false) - "GetHistoryItems": Boolean to include
-   *     history items in GET/SAVE operations (default: false) - "EditHistoryItems": Boolean to
-   *     enable editing of history items (default: false) - "StopOnFirstError": Boolean to stop
-   *     processing on first error (default: false) - "GetDummyRows": Boolean to generate dummy rows
-   *     in CREATE operations (default: true)
+   * @param options Map of options for CI creation, supported options:
+   *     <ul>
+   *       <li>- "InteractiveMode": Boolean to enable/disable interactive mode (default: false)
+   *       <li>- "GetHistoryItems": Boolean to get history items in GET/SAVE (default: false)
+   *       <li>- "EditHistoryItems": Boolean to enable editing of history items (default: false)
+   *       <li>- "StopOnFirstError": Boolean to stop processing on first error (default: false)
+   *       <li>- "GetDummyRows": Boolean to generate dummy rows in CREATE operations (default: true)
+   *     </ul>
+   *
    * @return CI object
-   * @throws JOAException
-   * @throws PssdkException
+   * @throws JOAException when JOAEception occurs
+   * @throws PssdkException when it can not establish a connection to the App Server
    */
   public CI ciFactory(String ciName, Map<String, Boolean> options)
       throws JOAException, PssdkException {
