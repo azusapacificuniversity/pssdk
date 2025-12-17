@@ -9,6 +9,19 @@ import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
 import psft.pt8.net.AppServerInfo;
 
+/**
+ * Main class to be called from client languages (Node.js, Python) to configure and connect to a
+ * PeopleSoft Application Server.
+ *
+ * <p>Uses environment variables or a configuration map to set connection parameters.
+ *
+ * <p>Provides a factory method to create CI objects.
+ *
+ * <p>Usage:
+ *
+ * <p>```js const appServer = AppServer.fromEnv(); const ci = appServer.ciFactory("CI_NAME");
+ * ci.get({ PARAM1: "value1", PARAM2: "value2" }); ```
+ */
 public class AppServer {
 
   private String strDomainConnectionPassword;
@@ -17,6 +30,14 @@ public class AppServer {
   private String strAppServerPath;
   private Logger logger = LoggerFactory.getLogger(AppServer.class);
 
+  /**
+   * Constructor to initialize AppServer with configuration parameters.
+   *
+   * @param config Map containing connection parameters: - hostport: App Server host and port -
+   *     domainpw: Domain connection password (optional) - username: User ID - password: User
+   *     password
+   * @throws RuntimeException if required parameters are missing
+   */
   public AppServer(Map<String, String> config) throws RuntimeException {
     String version = new AppServerInfo("", "", false, "", false).getToolsRel();
     logger.info("Using PSJOA JAR file version " + version);
@@ -36,7 +57,19 @@ public class AppServer {
     }
   }
 
-  public static AppServer fromEnv() throws JOAException {
+  /**
+   * Static method to create AppServer instance from environment variables.
+   *
+   * <p>Required environment variables: - PS_APPSERVER_HOSTPORT: host:port of the App Server,
+   * separate by comma for multiple servers, ex: "appserver1:9000,appserver2:9000" -
+   * PS_APPSERVER_USERNAME: user ID - PS_APPSERVER_PASSWORD: user password
+   *
+   * <p>Optional environment variable: - PS_APPSERVER_DOMAINPW: domain connection password
+   *
+   * @return AppServer instance
+   * @throws RuntimeException if instantiation fails
+   */
+  public static AppServer fromEnv() throws RuntimeException {
     Map<String, String> config = new HashMap<>();
     config.put("hostport", System.getenv("PS_APPSERVER_HOSTPORT"));
     config.put("domainpw", System.getenv("PS_APPSERVER_DOMAINPW"));
@@ -46,10 +79,32 @@ public class AppServer {
     return new AppServer(config);
   }
 
+  /**
+   * Factory method to create CI objects.
+   *
+   * @param ciName Name of the CI to create
+   * @return CI object
+   * @throws JOAException
+   * @throws PssdkException
+   */
   public CI ciFactory(String ciName) throws JOAException, PssdkException {
     return ciFactory(ciName, new HashMap<String, Boolean>());
   }
 
+  /**
+   * Factory method to create CI objects.
+   *
+   * @param ciName Name of the CI to create
+   * @param options Map of options for CI creation, supported options: - "InteractiveMode": Boolean
+   *     to enable/disable interactive mode (default: false) - "GetHistoryItems": Boolean to include
+   *     history items in GET/SAVE operations (default: false) - "EditHistoryItems": Boolean to
+   *     enable editing of history items (default: false) - "StopOnFirstError": Boolean to stop
+   *     processing on first error (default: false) - "GetDummyRows": Boolean to generate dummy rows
+   *     in CREATE operations (default: true)
+   * @return CI object
+   * @throws JOAException
+   * @throws PssdkException
+   */
   public CI ciFactory(String ciName, Map<String, Boolean> options)
       throws JOAException, PssdkException {
     // ***** Create PeopleSoft Session Object *****

@@ -52,6 +52,13 @@ public class CI {
   /****** STANDARD METHODS ********/
   /*********************************/
 
+  /**
+   * Performs a Get operation on the CI using the provided properties as keys.
+   *
+   * @param props A map of property names and values to use as keys for the Get operation.
+   * @return The CI instance.
+   * @throws PssdkException If unable to perform the Get operation.
+   */
   public CI get(Map<String, Object> props) throws PssdkException {
     try {
       CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
@@ -195,46 +202,111 @@ public class CI {
   /********** CI OPTIONS ***********/
   /*********************************/
 
+  /**
+   * Gets to see if the CI is in interactive mode.
+   *
+   * @return true if interactive mode is enabled, false otherwise.
+   * @throws JOAException
+   */
   public boolean getInteractiveMode() throws JOAException {
     return (boolean) iCi.getProperty("InteractiveMode");
   }
 
+  /**
+   * Sets the CI to run in interactive mode.
+   *
+   * @param inInteractiveMode true to enable interactive mode, false to disable it.
+   * @return the CI instance
+   * @throws JOAException
+   */
   public CI setInteractiveMode(boolean inInteractiveMode) throws JOAException {
     iCi.setProperty("InteractiveMode", inInteractiveMode);
     return this;
   }
 
+  /**
+   * Gets to see if the CI is set to GetHistoryItems.
+   *
+   * @return true if GetHistoryItems is enabled, false otherwise.
+   * @throws JOAException
+   */
   public boolean getGetHistoryItems() throws JOAException {
     return (boolean) iCi.getProperty("GetHistoryItems");
   }
 
+  /**
+   * Sets the CI to GetHistoryItems.
+   *
+   * @param inGetHistoryItems true to enable GetHistoryItems, false to disable it.
+   * @return the CI instance
+   * @throws JOAException
+   */
   public CI setGetHistoryItems(boolean inGetHistoryItems) throws JOAException {
     iCi.setProperty("GetHistoryItems", inGetHistoryItems);
     return this;
   }
 
+  /**
+   * Gets to see if the CI is set to EditHistoryItems.
+   *
+   * @return true if EditHistoryItems is enabled, false otherwise.
+   * @throws JOAException
+   */
   public boolean getEditHistoryItems() throws JOAException {
     return (boolean) iCi.getProperty("EditHistoryItems");
   }
 
+  /**
+   * Sets the CI to EditHistoryItems.
+   *
+   * @param inEditHistoryItems true to enable EditHistoryItems, false to disable it.
+   * @return the CI instance
+   * @throws JOAException
+   */
   public CI setEditHistoryItems(boolean inEditHistoryItems) throws JOAException {
     iCi.setProperty("EditHistoryItems", inEditHistoryItems);
     return this;
   }
 
+  /**
+   * Gets to see if the CI is set to GetDummyRows.
+   *
+   * @return true if GetDummyRows is enabled, false otherwise.
+   * @throws JOAException
+   */
   public boolean getGetDummyRows() throws JOAException {
     return (boolean) iCi.getProperty("GetDummyRows");
   }
 
+  /**
+   * Sets the CI to GetDummyRows.
+   *
+   * @param inGetDummyRows true to enable GetDummyRows, false to disable it.
+   * @return the CI instance
+   * @throws JOAException
+   */
   public CI setGetDummyRows(boolean inGetDummyRows) throws JOAException {
     iCi.setProperty("GetDummyRows", inGetDummyRows);
     return this;
   }
 
+  /**
+   * Gets to see if the CI is set to StopOnFirstError.
+   *
+   * @return true if StopOnFirstError is enabled, false otherwise.
+   * @throws JOAException
+   */
   public boolean getStopOnFirstError() throws JOAException {
     return (boolean) iCi.getProperty("StopOnFirstError");
   }
 
+  /**
+   * Sets the CI to StopOnFirstError.
+   *
+   * @param inStopOnFirstError true to enable StopOnFirstError, false to disable it.
+   * @return the CI instance
+   * @throws JOAException
+   */
   public CI setStopOnFirstError(boolean inStopOnFirstError) throws JOAException {
     iCi.setProperty("StopOnFirstError", inStopOnFirstError);
     return this;
