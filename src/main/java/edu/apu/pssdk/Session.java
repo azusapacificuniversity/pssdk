@@ -25,11 +25,11 @@ public class Session {
    * @param ciName the string name of the Component Interface we want to integrate with
    * @param options Map of options for CI creation, supported options:
    *     <ul>
-   *       <li>- "InteractiveMode": Boolean to enable/disable interactive mode (default: false)
-   *       <li>- "GetHistoryItems": Boolean to get history items in GET/SAVE (default: false)
-   *       <li>- "EditHistoryItems": Boolean to enable editing of history items (default: false)
-   *       <li>- "StopOnFirstError": Boolean to stop processing on first error (default: false)
-   *       <li>- "GetDummyRows": Boolean to generate dummy rows in CREATE operations (default: true)
+   *       <li> "InteractiveMode": Boolean to enable/disable interactive mode (default: false)
+   *       <li> "GetHistoryItems": Boolean to get history items in GET/SAVE (default: false)
+   *       <li> "EditHistoryItems": Boolean to enable editing of history items (default: false)
+   *       <li> "StopOnFirstError": Boolean to stop processing on first error (default: false)
+   *       <li> "GetDummyRows": Boolean to generate dummy rows in CREATE operations (default: true)
    *     </ul>
    *
    * @return a CI object with standard CI methods to operate upon and integrate with
