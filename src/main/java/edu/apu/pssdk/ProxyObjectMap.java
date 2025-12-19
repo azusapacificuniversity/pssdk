@@ -97,7 +97,12 @@ public class ProxyObjectMap implements ProxyObject, ProxyHashMap {
     return map.entrySet().iterator();
   }
 
-  /** toString, duh */
+  /**
+   * Comma-separated list of key-value mappings enclosed in curly braces ({}), following the pattern
+   * `{key=value, key=value, ...}`
+   *
+   * @return a string representation of the map
+   */
   @Override
   public String toString() {
     return map.toString();
