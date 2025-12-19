@@ -10,8 +10,14 @@ import psft.pt8.joa.ISession;
 /** Custom exception class for PeopleSoft SDK operations. */
 public class PssdkException extends Exception {
 
+  /** a collection of Peoplesoft messages to be gathered from the Session */
   private Collection<String> psMessages;
 
+  /**
+   * Constructs a new exception with the specified detail message.
+   *
+   * @param session the PSJOA ISession that created the CI, that holds PS messages
+   */
   public PssdkException(ISession session) {
     this(null, null, session);
   }
@@ -20,6 +26,7 @@ public class PssdkException extends Exception {
    * Constructs a new exception with the specified detail message.
    *
    * @param message the detail message
+   * @param session the PSJOA ISession that created the CI, that holds PS messages
    */
   public PssdkException(String message, ISession session) {
     this(message, null, session);
@@ -29,6 +36,7 @@ public class PssdkException extends Exception {
    * Constructs a new exception with the specified cause.
    *
    * @param cause the cause of this exception
+   * @param session the PSJOA ISession that created the CI, that holds PS messages
    */
   public PssdkException(Throwable cause, ISession session) {
     this(null, cause, session);
@@ -39,6 +47,7 @@ public class PssdkException extends Exception {
    *
    * @param message the detail message
    * @param cause the cause of this exception
+   * @param session the PSJOA ISession that created the CI, that holds PS messages
    */
   public PssdkException(String message, Throwable cause, ISession session) {
     super(message, cause);

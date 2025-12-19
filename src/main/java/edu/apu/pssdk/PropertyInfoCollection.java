@@ -7,23 +7,51 @@ import java.util.NoSuchElementException;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.JOAException;
 
+/**
+ * Wraps PSJOA CIPropertyInfoCollection in an iterable class, to iterate over and access
+ * PropertyInfo elements.
+ */
 public class PropertyInfoCollection implements Iterable<PropertyInfo> {
 
   CIPropertyInfoCollection colPropInfo;
 
-  public PropertyInfoCollection(CIPropertyInfoCollection propInfoCol) throws JOAException {
+  /**
+   * Constructs a new PropertyInfoCollection from a PSJOA CIPropertyInfoCollection.
+   *
+   * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
+   */
+  public PropertyInfoCollection(CIPropertyInfoCollection propInfoCol) {
     this.colPropInfo = propInfoCol;
   }
 
-  public static PropertyInfoCollection factory(CIPropertyInfoCollection propInfoCol)
-      throws JOAException {
+  /**
+   * Factory method to create an instance of PropertyInfoCollection.
+   *
+   * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
+   * @return A new PropertyInfoCollection instance.
+   */
+  public static PropertyInfoCollection factory(CIPropertyInfoCollection propInfoCol) {
     return new PropertyInfoCollection(propInfoCol);
   }
 
+  /**
+   * Retrieves a PropertyInfo object at the specified index.
+   *
+   * @param i The 0-based index of the PropertyInfo to retrieve.
+   * @return The PropertyInfo object at the given index.
+   * @throws JOAException if an error occurs during the retrieval.
+   */
   public PropertyInfo get(long i) throws JOAException {
     return PropertyInfo.factory(colPropInfo.item(i));
   }
 
+  /**
+   * Returns a list of PropertyInfo objects that are identified as keys in this collection.
+   *
+   * @return A list of PropertyInfo objects that are keys.
+   * @throws JOAException if an error occurs during the PeopleSoft API call while checking property
+   *     info.
+   */
   public List<PropertyInfo> keys() throws JOAException {
     List<PropertyInfo> keys = new ArrayList<PropertyInfo>();
     for (PropertyInfo pi : this) {
