@@ -1,4 +1,5 @@
 [![Maven Central](https://img.shields.io/maven-central/v/edu.apu.pssdk/pssdk)](https://central.sonatype.com/artifact/edu.apu.pssdk/pssdk/overview)
+[![npm](https://img.shields.io/npm/v/pssdk)](https://www.npmjs.com/package/pssdk)
 
 # PeopleSoft SDK
 
