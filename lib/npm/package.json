@@ -1,6 +1,6 @@
 {
   "name": "pssdk",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "PSSDK to Integrate with Peoplesoft Component Interfaces via GraalNodeJs",
   "keywords": [
     "pssdk",

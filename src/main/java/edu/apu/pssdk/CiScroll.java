@@ -122,15 +122,31 @@ public class CiScroll implements Iterable<CiRow> {
   }
 
   /**
-   * Converts the CiScroll to a ProxyArray representation. So that it can be serialized to JSON.
+   * Converts the CiScroll to a ProxyArray representation of ProxyObjects. So that it can be
+   * serialized to JSON.
    *
    * @return ProxyArray representing the CiScroll
    * @throws JOAException if conversion fails
    */
-  public ProxyArray toProxy() throws JOAException {
+  public ProxyArray toProxyArrayOfProxyObjects() throws JOAException {
     List<Object> result = new ArrayList<Object>();
     for (CiRow row : this) {
-      result.add(row.toProxy());
+      result.add(row.toProxyObject());
+    }
+    return ProxyArray.fromList(result);
+  }
+
+  /**
+   * Converts the CiScroll to a ProxyArray representation of ProxyHashMaps So that it can be
+   * serialized to JSON.
+   *
+   * @return ProxyArray representing the CiScroll
+   * @throws JOAException if conversion fails
+   */
+  public ProxyArray toProxyArrayOfProxyHashMaps() throws JOAException {
+    List<Object> result = new ArrayList<Object>();
+    for (CiRow row : this) {
+      result.add(row.toProxyHashMap());
     }
     return ProxyArray.fromList(result);
   }

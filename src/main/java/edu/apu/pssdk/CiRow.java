@@ -3,6 +3,8 @@ package edu.apu.pssdk;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.graalvm.polyglot.proxy.ProxyHashMap;
+import org.graalvm.polyglot.proxy.ProxyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import psft.pt8.joa.CIPropertyInfoCollection;
@@ -190,12 +192,12 @@ public class CiRow {
   }
 
   /**
-   * Convert the CI Row to a ProxyObjectMap representation. So that it can be serialized to JSON.
+   * Convert the CI Row to a ProxyObject, so that it can be serialized to JSON in Graal Node.js
    *
-   * @return ProxyObjectMap representation of the CI Row
+   * @return ProxyObject representation of the CI Row
    * @throws JOAException if conversion fails
    */
-  public ProxyObjectMap toProxy() throws JOAException {
+  public ProxyObject toProxyObject() throws JOAException {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
@@ -206,7 +208,7 @@ public class CiRow {
       if (Is.ciScroll(propVal)) {
         PropertyInfoCollection pic = pi.getPropertyInfoCollection();
         CiScroll scroll = CiScroll.factory(propVal, pic);
-        result.put(propName, scroll.toProxy());
+        result.put(propName, scroll.toProxyArrayOfProxyObjects());
       } else if (Is.ciRow(propVal)) {
         // We did not find a CI that would have
         // a CiRow nested under ROOT or another CiRow
@@ -214,7 +216,35 @@ public class CiRow {
         result.put(propName, propVal);
       }
     }
-    return new ProxyObjectMap(result);
+    return ProxyObject.fromMap(result);
+  }
+
+  /**
+   * Convert the CI Row to a ProxyHashMap, so that it can be serialized to JSON in GraalPython
+   *
+   * @return ProxyHashMap representation of the CI Row
+   * @throws JOAException if conversion fails
+   */
+  public ProxyHashMap toProxyHashMap() throws JOAException {
+    Map<Object, Object> result = new HashMap<>();
+
+    for (PropertyInfo pi : propInfoCol) {
+      if (pi.isFindKey() && !pi.isListKey()) continue;
+      String propName = pi.getName();
+      Object propVal = get(propName);
+
+      if (Is.ciScroll(propVal)) {
+        PropertyInfoCollection pic = pi.getPropertyInfoCollection();
+        CiScroll scroll = CiScroll.factory(propVal, pic);
+        result.put(propName, scroll.toProxyArrayOfProxyHashMaps());
+      } else if (Is.ciRow(propVal)) {
+        // We did not find a CI that would have
+        // a CiRow nested under ROOT or another CiRow
+      } else { // primitive types
+        result.put(propName, propVal);
+      }
+    }
+    return ProxyHashMap.from(result);
   }
 
   /**
