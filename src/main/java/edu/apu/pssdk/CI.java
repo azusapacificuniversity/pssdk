@@ -244,12 +244,12 @@ public class CI {
    * Gets the data out of the CI as an object that is native to the GraalVM client language. The
    * data returned should be easily serializable to JSON or other formats.
    *
-   * @return A ProxyObject representing the data in the CI.
+   * @return ProxyObject representing the data in the CI.
    * @throws PssdkException If unable to get data out of the CI.
    */
-  public ProxyObject toJSON() throws PssdkException {
+  public ProxyObject toProxyObject() throws PssdkException {
     try {
-      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxy();
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxyObject();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get data out of the CI. Original error enclosed.", e, iSession);
@@ -257,16 +257,33 @@ public class CI {
   }
 
   /**
-   * Gets the data out of the CI as a list/array that is native to your language. The data returned
-   * should be easily serializable to JSON or other formats. This method is intended for use after a
+   * Gets the data out of the CI as a list of Objects. The data returned should be easily
+   * serializable to JSON or other formats in GraalNodeJs. This method is intended for use after a
    * Find operation.
    *
-   * @return A ProxyArray representing the data in the CI.
+   * @return A ProxyArray of ProxyObjects representing the data in the CI.
    * @throws PssdkException If unable to get list data out of the CI.
    */
-  public ProxyArray toList() throws PssdkException {
+  public ProxyArray toProxyArrayOfProxyObjects() throws PssdkException {
     try {
-      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxy();
+      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyObjects();
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
+    }
+  }
+
+  /**
+   * Gets the data out of the CI as a list of HashMaps. The data returned should be easily
+   * serializable to JSON or other formats in GraalPython. This method is intended for use after a
+   * Find operation.
+   *
+   * @return A ProxyArray of ProxyHashMaps representing the data in the CI.
+   * @throws PssdkException If unable to get list data out of the CI.
+   */
+  public ProxyArray toProxyArrayOfProxyHashMaps() throws PssdkException {
+    try {
+      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyObjects();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
