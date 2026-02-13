@@ -257,15 +257,13 @@ public class CiRow {
    */
   public void populateWith(Map<String, Object> dataObject) throws JOAException {
     for (Map.Entry<String, Object> incoming : dataObject.entrySet()) {
-        PropertyInfo pi = propInfoCol.get(incoming.getKey());
+
+      PropertyInfo pi = propInfoCol.get(incoming.getKey());
+      Object incomingVal = incoming.getValue();
       // if it's read only, we can not do anything about it and PS is going to complain if we try
-      if (pi.isReadOnly()) continue;
+      if (incomingVal == null || pi == null || pi.isReadOnly()) continue;
 
       String propName = pi.getName();
-      Object incomingVal = dataObject.get(propName);
-
-      // if there is no incoming val, just ignore, PS is going to complain if required, anyways
-      if (incomingVal == null) continue;
 
       // check if the property is a Scroll
       if (pi.isCollection()) {
