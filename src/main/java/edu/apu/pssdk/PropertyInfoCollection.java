@@ -1,9 +1,12 @@
 package edu.apu.pssdk;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.JOAException;
 
@@ -13,15 +16,21 @@ import psft.pt8.joa.JOAException;
  */
 public class PropertyInfoCollection implements Iterable<PropertyInfo> {
 
-  CIPropertyInfoCollection colPropInfo;
+  Map<String, PropertyInfo> mapPropInfo = new HashMap<String, PropertyInfo>();
+  Logger logger;
 
   /**
    * Constructs a new PropertyInfoCollection from a PSJOA CIPropertyInfoCollection.
    *
    * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
    */
-  public PropertyInfoCollection(CIPropertyInfoCollection propInfoCol) {
-    this.colPropInfo = propInfoCol;
+  public PropertyInfoCollection(CIPropertyInfoCollection propInfoCol) throws JOAException {
+    this.logger = LoggerFactory.getLogger(PropertyInfoCollection.class);
+    this.logger.info("PropertyInfoCollection: " + propInfoCol.getClassName());
+    for (long i = 0; i < propInfoCol.getCount(); i++) {
+      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
+      mapPropInfo.put(pi.getName(), pi);
+    }
   }
 
   /**
@@ -30,7 +39,8 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
    * @return A new PropertyInfoCollection instance.
    */
-  public static PropertyInfoCollection factory(CIPropertyInfoCollection propInfoCol) {
+  public static PropertyInfoCollection factory(CIPropertyInfoCollection propInfoCol)
+      throws JOAException {
     return new PropertyInfoCollection(propInfoCol);
   }
 
@@ -41,8 +51,8 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    * @return The PropertyInfo object at the given index.
    * @throws JOAException if an error occurs during the retrieval.
    */
-  public PropertyInfo get(long i) throws JOAException {
-    return PropertyInfo.factory(colPropInfo.item(i));
+  public PropertyInfo get(String propName) throws JOAException {
+    return mapPropInfo.get(propName);
   }
 
   /**
@@ -66,7 +76,7 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    * @return the number of PropertyInfo in this collection
    */
   public long count() {
-    return colPropInfo.getCount();
+    return mapPropInfo.size();
   }
 
   /**
@@ -76,27 +86,6 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    */
   @Override
   public Iterator<PropertyInfo> iterator() {
-    return new Iterator<PropertyInfo>() {
-      private long currentIndex = 0;
-      private final long count = count();
-
-      @Override
-      public boolean hasNext() {
-        return currentIndex < count;
-      }
-
-      @Override
-      public PropertyInfo next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException();
-        }
-        try {
-          return get(currentIndex++);
-        } catch (JOAException e) {
-          throw new RuntimeException(
-              "Error retrieving PropertyInfo at index " + (currentIndex - 1), e);
-        }
-      }
-    };
+    return mapPropInfo.entrySet().stream().map(e -> e.getValue()).iterator();
   }
 }

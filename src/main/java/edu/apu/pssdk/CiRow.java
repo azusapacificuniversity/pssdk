@@ -96,6 +96,7 @@ public class CiRow {
    * @throws JOAException if retrieval fails
    */
   public Object get(String propertyName) throws JOAException {
+    logger.debug("Getting property: " + propertyName);
     return iRow.getProperty(propertyName);
   }
 
@@ -254,9 +255,9 @@ public class CiRow {
    * @param dataObject Map of incoming property values
    * @throws JOAException if population fails
    */
-  @SuppressWarnings("unchecked")
   public void populateWith(Map<String, Object> dataObject) throws JOAException {
-    for (PropertyInfo pi : propInfoCol) {
+    for (Map.Entry<String, Object> incoming : dataObject.entrySet()) {
+        PropertyInfo pi = propInfoCol.get(incoming.getKey());
       // if it's read only, we can not do anything about it and PS is going to complain if we try
       if (pi.isReadOnly()) continue;
 
@@ -274,6 +275,7 @@ public class CiRow {
           throw new JOAException(propName + " should be an Array of CIRows.");
 
         CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
+        @SuppressWarnings("unchecked")
         List<Map<String, Object>> subDataList = (List<Map<String, Object>>) incomingVal;
 
         scroll.populateWith(subDataList);
