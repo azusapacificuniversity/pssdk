@@ -31,6 +31,7 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
       PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
       mapPropInfo.put(pi.getName(), pi);
     }
+    propInfoCol = null; // dereference the original PSJOA collection to free resources
   }
 
   /**
