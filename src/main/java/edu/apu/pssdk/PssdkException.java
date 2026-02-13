@@ -53,6 +53,10 @@ public class PssdkException extends Exception {
     super(message, cause);
     psMessages = new ArrayList<String>();
     // ***** Display PeopleSoft Error Messages *****
+    if (session == null) {
+      psMessages.add("Peoplesoft Session is disconnected; Can not retrieve PeopleSoft messages.");
+      return;
+    }
     if (session.getErrorPending() || session.getWarningPending()) {
       IPSMessageCollection oPSMessageCollection;
       IPSMessage oPSMessage;
