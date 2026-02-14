@@ -152,7 +152,7 @@ public class CI {
       if (!((Boolean) (iCi.invokeMethod("Find", args))).booleanValue()) {
         throw new PssdkException("Unable to do a find on the CI.", iSession);
       }
-        findIsInvoked = true;
+      findIsInvoked = true;
       return this;
     } catch (JOAException e) {
       throw new PssdkException(
@@ -250,11 +250,11 @@ public class CI {
    * @throws PssdkException If unable to get data out of the CI.
    */
   public Proxy toJSON() throws PssdkException {
-        if (this.findIsInvoked) {
-            return toProxyArrayOfProxyObjects();
-        } else {
-            return toProxyObject();
-        }
+    if (this.findIsInvoked) {
+      return toProxyArrayOfProxyObjects();
+    } else {
+      return toProxyObject();
+    }
   }
 
   /**
