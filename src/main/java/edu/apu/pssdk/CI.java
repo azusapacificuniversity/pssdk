@@ -1,6 +1,7 @@
 package edu.apu.pssdk;
 
 import java.util.Map;
+import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.IObject;
@@ -16,6 +17,7 @@ public class CI {
   IObject iCi;
   ISession iSession;
   PropertyInfoCatalog propInfoCatalog;
+  private boolean findIsInvoked;
 
   /**
    * Constructor for CI wrapper class.
@@ -31,6 +33,7 @@ public class CI {
     this.iCi = iCi;
     this.iSession = session;
     this.propInfoCatalog = pic;
+    this.findIsInvoked = false;
   }
 
   /**
@@ -149,6 +152,7 @@ public class CI {
       if (!((Boolean) (iCi.invokeMethod("Find", args))).booleanValue()) {
         throw new PssdkException("Unable to do a find on the CI.", iSession);
       }
+        findIsInvoked = true;
       return this;
     } catch (JOAException e) {
       throw new PssdkException(
@@ -237,6 +241,21 @@ public class CI {
   /*********************************/
   /*********** TO DATA *************/
   /*********************************/
+
+  /**
+   * Gets the data out of the CI as an object that is native to the GraalVM client language. The
+   * data returned should be easily serializable to JSON or other formats.
+   *
+   * @return ProxyObject representing the data in the CI.
+   * @throws PssdkException If unable to get data out of the CI.
+   */
+  public Proxy toJSON() throws PssdkException {
+        if (this.findIsInvoked) {
+            return toProxyArrayOfProxyObjects();
+        } else {
+            return toProxyObject();
+        }
+  }
 
   /**
    * Gets the data out of the CI as an object that is native to the GraalVM client language. The
