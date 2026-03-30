@@ -1,8 +1,6 @@
 package edu.apu.pssdk;
 
 import java.lang.reflect.Field;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
@@ -32,8 +30,6 @@ public class PropertyInfo {
    */
   public PropertyInfo(IObject iPropInfo) throws JOAException {
     try {
-      Logger logger = LoggerFactory.getLogger(PropertyInfo.class);
-
       this.name = iPropInfo.getProperty("Name").toString();
       // set the boolean fields isKey, isCollection, isReadOnly, and isRequired
       this.isKey = (boolean) iPropInfo.getProperty("Key");
