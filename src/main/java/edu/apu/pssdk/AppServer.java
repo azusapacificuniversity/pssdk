@@ -1,7 +1,8 @@
 package edu.apu.pssdk;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import psft.pt8.joa.API;
@@ -22,7 +23,7 @@ public class AppServer {
   private String strPassword;
   private String strAppServerPath;
   private Logger logger = LoggerFactory.getLogger(AppServer.class);
-  private Map<String, PropertyInfoCatalog> picache = new HashMap<>();
+  private Map<String, PropertyInfoCatalog> picache = new ConcurrentHashMap<>();
 
   /**
    * Constructor to initialize AppServer with configuration parameters.
