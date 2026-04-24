@@ -2,9 +2,11 @@ package edu.apu.pssdk;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import psft.pt8.joa.API;
+import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
 import psft.pt8.net.AppServerInfo;
@@ -21,6 +23,7 @@ public class AppServer {
   private String strPassword;
   private String strAppServerPath;
   private Logger logger = LoggerFactory.getLogger(AppServer.class);
+  private Map<String, PropertyInfoCatalog> picache = new ConcurrentHashMap<>();
 
   /**
    * Constructor to initialize AppServer with configuration parameters.
@@ -131,7 +134,16 @@ public class AppServer {
           iSession);
     }
 
-    Session session = new Session(iSession);
-    return session.ciFactory(ciName, options);
+    IObject iCi = (IObject) iSession.getCompIntfc(ciName);
+
+    PropertyInfoCatalog pic =
+        picache.computeIfAbsent(ciName, k -> PropertyInfoCatalog.buildFor(iCi));
+
+    return CI.factory(iCi, iSession, pic)
+        .setInteractiveMode(options.getOrDefault("InteractiveMode", false))
+        .setGetHistoryItems(options.getOrDefault("GetHistoryItems", false))
+        .setEditHistoryItems(options.getOrDefault("EditHistoryItems", false))
+        .setStopOnFirstError(options.getOrDefault("StopOnFirstError", false))
+        .setGetDummyRows(options.getOrDefault("GetDummyRows", true));
   }
 }

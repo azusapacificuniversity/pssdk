@@ -1,9 +1,9 @@
 package edu.apu.pssdk;
 
 import java.util.Map;
+import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;
-import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
 import psft.pt8.joa.JOAException;
@@ -16,6 +16,8 @@ import psft.pt8.joa.JOAException;
 public class CI {
   IObject iCi;
   ISession iSession;
+  PropertyInfoCatalog propInfoCatalog;
+  private boolean findIsInvoked;
 
   /**
    * Constructor for CI wrapper class.
@@ -24,12 +26,14 @@ public class CI {
    * @param session The ISession that created the CI.
    * @throws JOAException If the provided IObject is null.
    */
-  public CI(IObject iCi, ISession session) throws JOAException {
+  public CI(IObject iCi, ISession session, PropertyInfoCatalog pic) throws JOAException {
     if (iCi == null) {
       throw new JOAException("Unable to Get Component Interface");
     }
     this.iCi = iCi;
     this.iSession = session;
+    this.propInfoCatalog = pic;
+    this.findIsInvoked = false;
   }
 
   /**
@@ -40,8 +44,9 @@ public class CI {
    * @return A CI instance wrapping the provided IObject.
    * @throws JOAException If unable to create the CI instance.
    */
-  public static CI factory(Object obj, ISession session) throws JOAException {
-    return new CI((IObject) obj, session);
+  public static CI factory(IObject obj, ISession session, PropertyInfoCatalog pic)
+      throws JOAException {
+    return new CI(obj, session, pic);
   }
 
   /*********************************/
@@ -55,8 +60,7 @@ public class CI {
    * @throws JOAException If unable to retrieve the PropertyInfoCollection.
    */
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return PropertyInfoCollection.factory(
-        (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection"));
+    return propInfoCatalog.getPropertyInfoCollection();
   }
 
   /**
@@ -66,8 +70,7 @@ public class CI {
    * @throws JOAException If unable to retrieve the PropertyInfoCollection.
    */
   public PropertyInfoCollection getFindPropertyInfoCollection() throws JOAException {
-    return PropertyInfoCollection.factory(
-        (CIPropertyInfoCollection) iCi.getProperty("FindKeyInfoCollection"));
+    return propInfoCatalog.getFindPropertyInfoCollection();
   }
 
   /**
@@ -77,8 +80,7 @@ public class CI {
    * @throws JOAException If unable to retrieve the PropertyInfoCollection.
    */
   public PropertyInfoCollection getGetKeyInfoCollection() throws JOAException {
-    return PropertyInfoCollection.factory(
-        (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection"));
+    return propInfoCatalog.getGetKeyInfoCollection();
   }
 
   /**
@@ -88,8 +90,7 @@ public class CI {
    * @throws JOAException If unable to retrieve the PropertyInfoCollection.
    */
   public PropertyInfoCollection getCreateKeyInfoCollection() throws JOAException {
-    return PropertyInfoCollection.factory(
-        (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection"));
+    return propInfoCatalog.getCreateKeyInfoCollection();
   }
 
   /*********************************/
@@ -151,6 +152,7 @@ public class CI {
       if (!((Boolean) (iCi.invokeMethod("Find", args))).booleanValue()) {
         throw new PssdkException("Unable to do a find on the CI.", iSession);
       }
+      findIsInvoked = true;
       return this;
     } catch (JOAException e) {
       throw new PssdkException(
@@ -239,6 +241,21 @@ public class CI {
   /*********************************/
   /*********** TO DATA *************/
   /*********************************/
+
+  /**
+   * Gets the data out of the CI as an object that is native to the GraalVM client language. The
+   * data returned should be easily serializable to JSON or other formats.
+   *
+   * @return ProxyObject representing the data in the CI.
+   * @throws PssdkException If unable to get data out of the CI.
+   */
+  public Proxy toJSON() throws PssdkException {
+    if (this.findIsInvoked) {
+      return toProxyArrayOfProxyObjects();
+    } else {
+      return toProxyObject();
+    }
+  }
 
   /**
    * Gets the data out of the CI as an object that is native to the GraalVM client language. The

@@ -13,8 +13,14 @@ import psft.pt8.joa.JOAException;
 public class PropertyInfo {
   static final int ALTERNATE_SEARCH_KEY = 16;
   static final int LISTBOX_ITEM_NUM = 32;
-  IObject iPropInfo;
-  int useEdit;
+  String name;
+  PropertyInfoCollection propInfoCol;
+  boolean isKey;
+  boolean isFindKey;
+  boolean isListKey;
+  boolean isReadOnly;
+  boolean isRequired;
+  boolean isCollection;
 
   /**
    * Constructor to initialize PropertyInfo with IObject.
@@ -22,18 +28,33 @@ public class PropertyInfo {
    * @param iProp IObject representing the CI Property Info
    * @throws JOAException if initialization fails
    */
-  public PropertyInfo(IObject iProp) throws JOAException {
-    this.iPropInfo = iProp;
+  public PropertyInfo(IObject iPropInfo) throws JOAException {
     try {
-      Field[] declaredFields = iPropInfo.getClass().getDeclaredFields();
-      for (Field field : declaredFields) {
+      this.name = iPropInfo.getProperty("Name").toString();
+      // set the boolean fields isKey, isCollection, isReadOnly, and isRequired
+      this.isKey = (boolean) iPropInfo.getProperty("Key");
+      this.isCollection = (boolean) iPropInfo.getProperty("IsCollection");
+      this.isReadOnly = (boolean) iPropInfo.getProperty("IsReadOnly");
+      this.isRequired = (boolean) iPropInfo.getProperty("Required");
+
+      // set the boolean fields isFindKey and isListKey properties
+      for (Field field : iPropInfo.getClass().getDeclaredFields()) {
         if (field.getName().equals("m_fUseEdit")) {
           field.setAccessible(true);
-          useEdit = (int) field.get(iPropInfo);
+          int useEdit = (int) field.get(iPropInfo);
+          this.isFindKey = (useEdit & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
+          this.isListKey = (useEdit & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
+          break;
         }
       }
+
+      if (this.isCollection) {
+        this.propInfoCol =
+            PropertyInfoCollection.factory(
+                (CIPropertyInfoCollection) iPropInfo.getProperty("PropertyInfoCollection"));
+      }
     } catch (Exception e) {
-      throw new JOAException("Can not access m_fUseEdit field");
+      throw new JOAException(e);
     }
   }
 
@@ -55,8 +76,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public PropertyInfoCollection getPropertyInfoCollection() throws JOAException {
-    return PropertyInfoCollection.factory(
-        (CIPropertyInfoCollection) iPropInfo.getProperty("PropertyInfoCollection"));
+    return propInfoCol;
   }
 
   /**
@@ -66,7 +86,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public String getName() throws JOAException {
-    return iPropInfo.getProperty("Name").toString();
+    return name;
   }
 
   /**
@@ -76,7 +96,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isKey() throws JOAException {
-    return (boolean) iPropInfo.getProperty("Key");
+    return isKey;
   }
 
   /**
@@ -86,7 +106,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isReadOnly() throws JOAException {
-    return (boolean) iPropInfo.getProperty("IsReadOnly");
+    return isReadOnly;
   }
 
   /**
@@ -96,7 +116,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isRequired() throws JOAException {
-    return (boolean) iPropInfo.getProperty("Required");
+    return isRequired;
   }
 
   /**
@@ -106,7 +126,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isCollection() throws JOAException {
-    return (boolean) iPropInfo.getProperty("IsCollection");
+    return isCollection;
   }
 
   /**
@@ -116,7 +136,7 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isListKey() throws JOAException {
-    return (getUseEdit() & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
+    return isListKey;
   }
 
   /**
@@ -126,16 +146,6 @@ public class PropertyInfo {
    * @throws JOAException if retrieval fails
    */
   public boolean isFindKey() throws JOAException {
-    return (getUseEdit() & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
-  }
-
-  /**
-   * Get the useEdit flags of the property for bitwise operations for the other methods.
-   *
-   * @return useEdit flags
-   * @throws JOAException if retrieval fails
-   */
-  private int getUseEdit() {
-    return useEdit;
+    return isFindKey;
   }
 }
