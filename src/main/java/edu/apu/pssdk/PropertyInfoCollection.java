@@ -1,8 +1,8 @@
 package edu.apu.pssdk;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import psft.pt8.joa.JOAException;
  */
 public class PropertyInfoCollection implements Iterable<PropertyInfo> {
 
-  Map<String, PropertyInfo> mapPropInfo = new HashMap<String, PropertyInfo>();
+  Map<String, PropertyInfo> mapPropInfo = new LinkedHashMap<String, PropertyInfo>();
   Logger logger;
 
   /**
