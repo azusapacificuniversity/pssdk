@@ -269,7 +269,7 @@ public class CiRow {
       if (pi.isCollection()) {
         Object exVal = get(propName);
 
-        if (!Is.polyglotList(incomingVal))
+        if (!Is.polyglotList(incomingVal) && !Is.listOfMaps(incomingVal))
           throw new JOAException(propName + " should be an Array of CIRows.");
 
         CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
