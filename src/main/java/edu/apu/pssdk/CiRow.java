@@ -265,7 +265,7 @@ public class CiRow {
       String propName = pi.getName();
 
       if (pi.isCollection()) {
-        if (!Is.polyglotList(incomingVal) && !Is.listOfMaps(incomingVal))
+        if (!Is.listOfStringToObjectMaps(incomingVal))
           throw new JOAException(propName + " should be an Array of CIRows.");
 
         Object exVal = get(propName);
