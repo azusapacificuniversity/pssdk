@@ -1,5 +1,7 @@
 package edu.apu.pssdk;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
@@ -13,7 +15,7 @@ import psft.pt8.joa.JOAException;
  * operations GET, SET, FIND, SAVE, CREATE, and CANCEL. It wraps the CI object received from PSJOA.
  * Should be instantiated via the `AppServer.ciFactory()` methods.
  */
-public class CI {
+public class CI implements Closeable {
   IObject iCi;
   ISession iSession;
   PropertyInfoCatalog propInfoCatalog;
@@ -218,8 +220,6 @@ public class CI {
       if (!((Boolean) (iCi.invokeMethod("Cancel", new Object[0]))).booleanValue()) {
         throw new PssdkException("Operation CANCEL failed.", iSession);
       }
-      this.close();
-      iCi = null;
     } catch (JOAException e) {
       throw new PssdkException("Operation CANCEL failed. Original error enclosed.", e, iSession);
     }
@@ -228,14 +228,15 @@ public class CI {
   /**
    * Closes the CI session.
    *
-   * @throws PssdkException If unable to close the Session which created the CI.
+   * @throws IOException If unable to close the Session which created the CI.
    */
-  public void close() throws PssdkException {
+  public void close() throws IOException {
+    if (iSession == null) return;
     if (!iSession.disconnect()) {
-      throw new PssdkException("Operation CANCEL failed.", iSession);
+      throw new IOException("Could not close the Session which created the CI.");
     }
     iSession = null;
-    return;
+    iCi = null;
   }
 
   /*********************************/
