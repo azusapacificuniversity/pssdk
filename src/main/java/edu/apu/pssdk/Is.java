@@ -1,5 +1,8 @@
 package edu.apu.pssdk;
 
+import java.util.List;
+import java.util.Map;
+
 /** Utility class with static methods to check object types. */
 public class Is {
 
@@ -26,13 +29,18 @@ public class Is {
   }
 
   /**
-   * Checks if the given object is a PolyglotList (ex: a JS Array).
+   * Checks if the given object is a List<Map<String, Object>>
    *
    * @param obj the object to check
-   * @return true if the object is a PolyglotList, false otherwise
+   * @return true if the object is a List<Map<String, Object>>, false otherwise
    */
-  public static boolean polyglotList(Object obj) {
-    String className = "class com.oracle.truffle.polyglot.PolyglotList";
-    return obj.getClass().toString().equals(className);
+  public static boolean listOfStringToObjectMaps(Object obj) {
+    try {
+      @SuppressWarnings("unchecked")
+      List<Map<String, Object>> list = (List<Map<String, Object>>) obj;
+      return list.stream().allMatch(item -> item instanceof Map);
+    } catch (ClassCastException e) {
+      return false;
+    }
   }
 }
