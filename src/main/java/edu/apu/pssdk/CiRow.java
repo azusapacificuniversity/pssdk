@@ -267,7 +267,7 @@ public class CiRow {
 
       if (pi.isCollection()) {
         if (!Is.listOfStringToObjectMaps(incomingVal))
-          throw new JOAException(propName + " should be an Array of CIRows.");
+          throw new JOAException(propName + " should be a List/Array of Dicts/Objects.");
 
         Object exVal = get(propName);
         CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
