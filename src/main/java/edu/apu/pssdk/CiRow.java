@@ -103,19 +103,6 @@ public class CiRow {
   /**
    * Set property value in the CI Row
    *
-   * @param prop PropertyInfo of the property
-   * @param val Object value to set
-   * @return CiRow instance for method chaining
-   * @throws JOAException if setting fails
-   */
-  public CiRow set(PropertyInfo prop, Object val) throws JOAException {
-    logger.debug("Setting property: " + prop.getName() + " to value: " + val.toString());
-    return set(prop.getName(), val);
-  }
-
-  /**
-   * Set property value in the CI Row
-   *
    * @param propertyName Name of the property
    * @param val Object value to set
    * @return CiRow instance for method chaining
