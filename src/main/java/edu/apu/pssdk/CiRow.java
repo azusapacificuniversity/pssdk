@@ -151,46 +151,18 @@ public class CiRow {
    *
    * @param incoming Map of incoming property values
    * @return Boolean indicating if the incoming map matches the CI Row keys
-   * @throws JOAException if matching fails
    */
-  public Boolean isMatch(Map<String, Object> incoming) throws JOAException {
-    for (PropertyInfo key : propInfoCol.keys()) {
-      Object incomingVal = incoming.get(key.getName());
-      if (incomingVal == null) return false;
-      if (!get(key).toString().equals(incomingVal.toString())) return false;
-    }
-    return true;
-  }
-
-  /**
-   * Find a matching map in the incoming list based on CI Row keys.
-   *
-   * @param incomingList List of maps to search
-   * @return Matching map if found, otherwise null
-   * @throws JOAException if searching fails
-   */
-  public Map<String, Object> findIn(List<Map<String, Object>> incomingList) throws JOAException {
-    return findIn(incomingList, false);
-  }
-
-  /**
-   * Find a matching map in the incoming list based on CI Row keys, with option to delete found.
-   *
-   * @param incomingList List of maps to search
-   * @param deleteFound Boolean indicating if found map should be deleted from the list
-   * @return Matching map if found, otherwise null
-   * @throws JOAException if searching fails
-   */
-  public Map<String, Object> findIn(List<Map<String, Object>> incomingList, boolean deleteFound)
-      throws JOAException {
-    for (Map<String, Object> incoming : incomingList) {
-      // TODO: this should be performed in CiScroll, not here
-      if (isMatch(incoming)) {
-        if (deleteFound) incomingList.remove(incoming);
-        return incoming;
+  public boolean isMatch(Map<String, Object> incoming) {
+    try {
+      for (PropertyInfo key : propInfoCol.keys()) {
+        Object incomingVal = incoming.get(key.getName());
+        if (incomingVal == null) return false;
+        if (!get(key).toString().equals(incomingVal.toString())) return false;
       }
+      return true;
+    } catch (JOAException e) {
+      throw new IllegalStateException("Error checking match: " + e.getMessage(), e);
     }
-    return null;
   }
 
   /**
