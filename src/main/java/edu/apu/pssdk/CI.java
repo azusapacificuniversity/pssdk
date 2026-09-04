@@ -2,6 +2,7 @@ package edu.apu.pssdk;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
@@ -20,6 +21,7 @@ public class CI implements Closeable {
   ISession iSession;
   PropertyInfoCatalog propInfoCatalog;
   private boolean findIsInvoked;
+  private List<String> stdOps = List.of("get", "set", "find", "save", "create", "cancel");
 
   /**
    * Constructor for CI wrapper class.
@@ -182,6 +184,40 @@ public class CI implements Closeable {
       return this;
     } catch (JOAException e) {
       throw new PssdkException("Unable to save object. Original error enclosed.", e, iSession);
+    }
+  }
+
+  /**
+   * Invokes non-standard operation that are defined on a CI. Depending on the documentation of that
+   * non-standard operation, you might want to call `create` or `get` before invoking this
+   * operation. Data passed in the `data` map will be `set` on the CI before invoking the operation.
+   * You can still use `set` to set data on the CI before invoking the operation. Returns the CI
+   * instance after invoking the operation.
+   *
+   * @param operation The name of the non-standard operation to invoke on the CI.
+   * @param data Optional. A map of property names and values to set on the CI before invoking the
+   *     operation.
+   * @return The CI instance.
+   * @throws PssdkException If unable to perform the Save operation.
+   */
+  public CI execute(String operation, Map<String, Object> data) throws PssdkException {
+    if (stdOps.indexOf(operation.toLowerCase()) != -1) {
+      throw new PssdkException(
+          "Operation "
+              + operation
+              + " is a standard operation. Use the corresponding method instead.",
+          iSession);
+    }
+    try {
+      // unparse
+      if (data != null) this.set(data);
+      // invoke non-standard operation on the CI
+      if (!((Boolean) (iCi.invokeMethod(operation, new Object[0]))).booleanValue()) {
+        throw new PssdkException("Unable to invoke " + operation + " on the CI", iSession);
+      }
+      return this;
+    } catch (JOAException e) {
+      throw new PssdkException("Unable to invoke " + operation + " on the CI", e, iSession);
     }
   }
 
