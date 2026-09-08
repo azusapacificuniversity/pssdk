@@ -162,7 +162,6 @@ public class CiRow {
     Map<String, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
-      if (pi.isFindKey() && !pi.isListKey()) continue;
       String propName = pi.getName();
       Object propVal = get(propName);
 
@@ -171,9 +170,11 @@ public class CiRow {
         CiScroll scroll = CiScroll.factory(propVal, pic);
         result.put(propName, scroll.toProxyArrayOfProxyObjects());
       } else if (Is.ciRow(propVal)) {
-        // We did not find a CI that would have
-        // a CiRow nested under ROOT or another CiRow
+        // CiRows can not be nested under ROOT CI or under another CiRow
+        // there should be always a CiScroll in between.
+        // So we should never get here. Remove `else if`?
       } else { // primitive types
+        if (pi.isFindKey() && !pi.isListKey()) continue;
         result.put(propName, propVal);
       }
     }
@@ -190,7 +191,6 @@ public class CiRow {
     Map<Object, Object> result = new HashMap<>();
 
     for (PropertyInfo pi : propInfoCol) {
-      if (pi.isFindKey() && !pi.isListKey()) continue;
       String propName = pi.getName();
       Object propVal = get(propName);
 
@@ -199,9 +199,11 @@ public class CiRow {
         CiScroll scroll = CiScroll.factory(propVal, pic);
         result.put(propName, scroll.toProxyArrayOfProxyHashMaps());
       } else if (Is.ciRow(propVal)) {
-        // We did not find a CI that would have
-        // a CiRow nested under ROOT or another CiRow
+        // CiRows can not be nested under ROOT CI or under another CiRow
+        // there should be always a CiScroll in between.
+        // So we should never get here. Remove `else if`?
       } else { // primitive types
+        if (pi.isFindKey() && !pi.isListKey()) continue;
         result.put(propName, propVal);
       }
     }
