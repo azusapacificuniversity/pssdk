@@ -1,6 +1,5 @@
 package edu.apu.pssdk;
 
-import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
@@ -25,14 +24,10 @@ class PropertyInfoCatalog {
   public static PropertyInfoCatalog buildFor(IObject iCi) {
     try {
       return new PropertyInfoCatalog(
-          PropertyInfoCollection.factory(
-              (CIPropertyInfoCollection) iCi.getProperty("PropertyInfoCollection")),
-          PropertyInfoCollection.factory(
-              (CIPropertyInfoCollection) iCi.getProperty("GetKeyInfoCollection")),
-          PropertyInfoCollection.factory(
-              (CIPropertyInfoCollection) iCi.getProperty("CreateKeyInfoCollection")),
-          PropertyInfoCollection.factory(
-              (CIPropertyInfoCollection) iCi.getProperty("FindKeyInfoCollection")));
+          PropertyInfoCollection.factory((IObject) iCi.getProperty("PropertyInfoCollection")),
+          PropertyInfoCollection.factory((IObject) iCi.getProperty("GetKeyInfoCollection")),
+          PropertyInfoCollection.factory((IObject) iCi.getProperty("CreateKeyInfoCollection")),
+          PropertyInfoCollection.factory((IObject) iCi.getProperty("FindKeyInfoCollection")));
     } catch (JOAException e) {
       throw new RuntimeException("Error building PropertyInfoCatalog: " + e.getMessage(), e);
     }
