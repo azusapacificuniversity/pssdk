@@ -84,22 +84,6 @@ public class CiScroll implements Iterable<CiRow> {
   }
 
   /**
-   * Finds the first CiRow matching the provided data.
-   *
-   * @param data Map of property names and values to match
-   * @return First matching CiRow, or null if none found
-   * @throws JOAException if search fails
-   */
-  public CiRow find(Map<String, Object> data) throws JOAException {
-    for (CiRow row : this) {
-      if (row.isMatch(data)) {
-        return row;
-      }
-    }
-    return null;
-  }
-
-  /**
    * Inserts an empty CiRow into the CiScroll.
    *
    * @return Newly inserted empty CiRow
@@ -155,17 +139,24 @@ public class CiScroll implements Iterable<CiRow> {
    * Populates the CiScroll with data from the incoming list of maps. Updates existing rows, deletes
    * rows not found in incoming data, and adds new rows for non-existing data.
    *
-   * @param dataList List of maps containing incoming data
+   * @param incomingList List of maps containing incoming data
    * @throws JOAException if population fails
    */
-  public void populateWith(List<Map<String, Object>> dataList) throws JOAException {
-    // Update existing and delete if not found in incoming
+  public void populateWith(List<Map<String, Object>> incomingList) throws JOAException {
+    // shallow copy of incomingList, so we can delete found items from it
+    List<Map<String, Object>> incomingListCopy = new ArrayList<>(incomingList);
+    // Update existing CiRows and delete CiRow if not found in incomingListCopy
     long j = count();
     while (j > 0 && !isEmpty()) {
       CiRow exRow = get(--j);
       if (!exRow.isEmpty()) {
-        Map<String, Object> incomingMatch = exRow.findIn(dataList, /* deleteFound */ true);
+        Map<String, Object> incomingMatch =
+            incomingListCopy.stream()
+                .filter(exRow::isMatch) // get matches
+                .findFirst() // there should be only one
+                .orElse(null); // if no match, null
         if (incomingMatch != null) {
+          incomingListCopy.remove(incomingMatch);
           exRow.populateWith(incomingMatch);
         } else {
           delete(j); // next takes index of the deleted, but we're looking for previous
@@ -173,7 +164,7 @@ public class CiScroll implements Iterable<CiRow> {
       }
     }
     // Add non-existing
-    for (Map<String, Object> incomingObj : dataList) {
+    for (Map<String, Object> incomingObj : incomingListCopy) {
       CiRow newRow = isEmpty() ? get(0) : insertEmptyRow();
       newRow.populateWith(incomingObj);
     }
