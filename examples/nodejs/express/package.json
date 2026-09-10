@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node --jvm --vm.cp=/opt/peoplesoft-sdk-all.jar src/index.js"
+    "start": "node --jvm --vm.cp=/opt/pssdk/pssdk-example-express-all.jar src/index.js"
   },
   "author": "Azusa Pacific University",
   "license": "Copyright Azusa Pacific University. All rights reserved.",
@@ -14,6 +14,8 @@
   "description": "PeopleSoft SDK System API, should eventually be merged to Peoplesoft SAPI",
   "dependencies": {
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "pssdk": "^4.0.0"
   }
 }

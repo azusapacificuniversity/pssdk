@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'edu.apu.pssdk', name: 'pssdk', version: '2.0.0-SNAPSHOT'
+    implementation group: 'edu.apu.pssdk', name: 'pssdk', version: '4.0.0'
     implementation group: 'com.oracle.peoplesoft', name: 'psjoa', version: "$System.env.PSJOA_JAR_VERSION"
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
 }
