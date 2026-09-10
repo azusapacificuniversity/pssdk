@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyHashMap;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
@@ -188,34 +189,29 @@ public class CI implements Closeable {
   }
 
   /**
-   * Invokes non-standard operation that are defined on a CI. Depending on the documentation of that
-   * non-standard operation, you might want to call `create` or `get` before invoking this
-   * operation. Data passed in the `data` map will be `set` on the CI before invoking the operation.
-   * You can still use `set` to set data on the CI before invoking the operation. Returns the CI
-   * instance after invoking the operation.
+   * Invokes non-standard operations that are defined on a CI. Depending on the documentation you
+   * might want to call `create` or `get` beforehand. Data passed in the `data` map will be `set` on
+   * the CI before operation is invoked. However, you can still use `set` if you prefer. This method
+   * does NOT return the CI, so chaining is not possible. It returns whatever the operation returns.
+   * You can still call `toJSON` afterwards if there is data to get out of the CI.
    *
    * @param operation The name of the non-standard operation to invoke on the CI.
-   * @param data Optional. A map of property names and values to set on the CI before invoking the
-   *     operation.
-   * @return The CI instance.
-   * @throws PssdkException If unable to perform the Save operation.
+   * @param data Optional. A map of property names and values to set on the CI.
+   * @return Object. A Boolean, Long, String, or null per PeopleSoft docs for non-standard ops.
+   * @throws PssdkException If the operation is unsupported or fails to invoke.
    */
-  public CI execute(String operation, Map<String, Object> data) throws PssdkException {
+  public Object execute(String operation, Map<String, Object> data) throws PssdkException {
     if (stdOps.indexOf(operation.toLowerCase()) != -1) {
       throw new PssdkException(
-          "Operation "
-              + operation
+          operation.toUpperCase()
               + " is a standard operation. Use the corresponding method instead.",
           iSession);
     }
     try {
       // unparse
       if (data != null) this.set(data);
-      // invoke non-standard operation on the CI
-      if (!((Boolean) (iCi.invokeMethod(operation, new Object[0]))).booleanValue()) {
-        throw new PssdkException("Unable to invoke " + operation + " on the CI", iSession);
-      }
-      return this;
+      // invoke non-standard operation on the CI and return whatever it returns
+      return iCi.invokeMethod(operation, new Object[0]);
     } catch (JOAException e) {
       throw new PssdkException("Unable to invoke " + operation + " on the CI", e, iSession);
     }
@@ -311,6 +307,22 @@ public class CI implements Closeable {
   }
 
   /**
+   * Gets the data out of the CI as a HashMap. The data returned should be easily serializable to
+   * JSON or other formats in GraalPython.
+   *
+   * @return ProxyHashMap representing the data in the CI.
+   * @throws PssdkException If unable to get data out of the CI.
+   */
+  public ProxyHashMap toProxyHashMap() throws PssdkException {
+    try {
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxyHashMap();
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to get data out of the CI. Original error enclosed.", e, iSession);
+    }
+  }
+
+  /**
    * Gets the data out of the CI as a list of Objects. The data returned should be easily
    * serializable to JSON or other formats in GraalNodeJs. This method is intended for use after a
    * Find operation.
@@ -337,7 +349,7 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyHashMaps() throws PssdkException {
     try {
-      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyObjects();
+      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyHashMaps();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);

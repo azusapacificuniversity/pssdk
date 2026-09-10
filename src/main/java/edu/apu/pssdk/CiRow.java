@@ -7,7 +7,6 @@ import org.graalvm.polyglot.proxy.ProxyHashMap;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
@@ -34,19 +33,6 @@ public class CiRow {
   }
 
   /**
-   * Static factory method to create CiRow from IObject and JOA CIPropertyInfoCollection.
-   *
-   * @param iRow IObject representing the CI Row
-   * @param propInfoCol CIPropertyInfoCollection for the CI Row
-   * @return CiRow instance
-   * @throws JOAException if creation fails
-   */
-  public static CiRow factory(Object iRow, CIPropertyInfoCollection propInfoCol)
-      throws JOAException {
-    return new CiRow((IObject) iRow, PropertyInfoCollection.factory(propInfoCol));
-  }
-
-  /**
    * Static factory method to create CiRow from IObject and PropertyInfoCollection.
    *
    * @param iRow IObject representing the CI Row
@@ -54,8 +40,9 @@ public class CiRow {
    * @return CiRow instance
    * @throws JOAException if creation fails
    */
-  public static CiRow factory(Object iRow, PropertyInfoCollection propInfoCol) throws JOAException {
-    return new CiRow((IObject) iRow, propInfoCol);
+  public static CiRow factory(IObject iRow, PropertyInfoCollection propInfoCol)
+      throws JOAException {
+    return new CiRow(iRow, propInfoCol);
   }
 
   /**
@@ -167,7 +154,7 @@ public class CiRow {
 
       if (Is.ciScroll(propVal)) {
         PropertyInfoCollection pic = pi.getPropertyInfoCollection();
-        CiScroll scroll = CiScroll.factory(propVal, pic);
+        CiScroll scroll = CiScroll.factory((IObject) propVal, pic);
         result.put(propName, scroll.toProxyArrayOfProxyObjects());
       } else if (Is.ciRow(propVal)) {
         // CiRows can not be nested under ROOT CI or under another CiRow
@@ -196,7 +183,7 @@ public class CiRow {
 
       if (Is.ciScroll(propVal)) {
         PropertyInfoCollection pic = pi.getPropertyInfoCollection();
-        CiScroll scroll = CiScroll.factory(propVal, pic);
+        CiScroll scroll = CiScroll.factory((IObject) propVal, pic);
         result.put(propName, scroll.toProxyArrayOfProxyHashMaps());
       } else if (Is.ciRow(propVal)) {
         // CiRows can not be nested under ROOT CI or under another CiRow
@@ -231,7 +218,7 @@ public class CiRow {
           throw new JOAException(propName + " should be a List/Array of Dicts/Objects.");
 
         Object exVal = get(propName);
-        CiScroll scroll = CiScroll.factory(exVal, pi.getPropertyInfoCollection());
+        CiScroll scroll = CiScroll.factory((IObject) exVal, pi.getPropertyInfoCollection());
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> subDataList = (List<Map<String, Object>>) incomingVal;
         scroll.populateWith(subDataList);

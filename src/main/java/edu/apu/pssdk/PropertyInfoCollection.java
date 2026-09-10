@@ -6,8 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import psft.pt8.joa.CIPropertyInfoCollection;
+import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
 /**
@@ -16,6 +15,8 @@ import psft.pt8.joa.JOAException;
  */
 public class PropertyInfoCollection implements Iterable<PropertyInfo> {
 
+  static final String CLASS_NAME = "CompIntfcPropertyInfoCollection";
+
   Map<String, PropertyInfo> mapPropInfo = new LinkedHashMap<String, PropertyInfo>();
   Logger logger;
 
@@ -23,15 +24,21 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    * Constructs a new PropertyInfoCollection from a PSJOA CIPropertyInfoCollection.
    *
    * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
+   * @throws JOAException if propInfoCol is not a PSJOA CIPropertyInfoCollection.
    */
-  public PropertyInfoCollection(CIPropertyInfoCollection propInfoCol) throws JOAException {
-    this.logger = LoggerFactory.getLogger(PropertyInfoCollection.class);
-    this.logger.info("PropertyInfoCollection: " + propInfoCol.getClassName());
-    for (long i = 0; i < propInfoCol.getCount(); i++) {
-      PropertyInfo pi = PropertyInfo.factory(propInfoCol.item(i));
+  public PropertyInfoCollection(IObject propInfoCol) throws JOAException {
+    if (!CLASS_NAME.equals(propInfoCol.getClassName()))
+      throw new JOAException(
+          "Expected a " + CLASS_NAME + " but got a " + propInfoCol.getClassName());
+
+    // CIPropertyInfoCollection.getCount()
+    long count = ((Number) propInfoCol.getProperty("Count")).longValue();
+    for (long i = 0; i < count; i++) {
+      // CIPropertyInfoCollection.item(i)
+      IObject iPropInfo = (IObject) propInfoCol.invokeMethod("item", new Object[] {i});
+      PropertyInfo pi = PropertyInfo.factory(iPropInfo);
       mapPropInfo.put(pi.getName(), pi);
     }
-    propInfoCol = null; // dereference the original PSJOA collection to free resources
   }
 
   /**
@@ -40,8 +47,7 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
    * @return A new PropertyInfoCollection instance.
    */
-  public static PropertyInfoCollection factory(CIPropertyInfoCollection propInfoCol)
-      throws JOAException {
+  public static PropertyInfoCollection factory(IObject propInfoCol) throws JOAException {
     return new PropertyInfoCollection(propInfoCol);
   }
 

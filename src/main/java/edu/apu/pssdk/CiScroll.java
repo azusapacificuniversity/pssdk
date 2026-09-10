@@ -35,9 +35,9 @@ public class CiScroll implements Iterable<CiRow> {
    * @return CiScroll instance
    * @throws JOAException if creation fails
    */
-  public static CiScroll factory(Object obj, PropertyInfoCollection propInfoCol)
+  public static CiScroll factory(IObject obj, PropertyInfoCollection propInfoCol)
       throws JOAException {
-    return new CiScroll((IObject) obj, propInfoCol);
+    return new CiScroll(obj, propInfoCol);
   }
 
   /**
@@ -80,7 +80,7 @@ public class CiScroll implements Iterable<CiRow> {
   public CiRow get(long index) throws JOAException {
     Object[] args = new Object[1];
     args[0] = index;
-    return CiRow.factory(iScroll.invokeMethod("Item", args), getPropertyInfoCollection());
+    return CiRow.factory((IObject) iScroll.invokeMethod("Item", args), getPropertyInfoCollection());
   }
 
   /**

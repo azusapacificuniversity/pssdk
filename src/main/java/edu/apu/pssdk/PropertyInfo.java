@@ -1,7 +1,6 @@
 package edu.apu.pssdk;
 
 import java.lang.reflect.Field;
-import psft.pt8.joa.CIPropertyInfoCollection;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.JOAException;
 
@@ -51,7 +50,7 @@ public class PropertyInfo {
       if (this.isCollection) {
         this.propInfoCol =
             PropertyInfoCollection.factory(
-                (CIPropertyInfoCollection) iPropInfo.getProperty("PropertyInfoCollection"));
+                (IObject) iPropInfo.getProperty("PropertyInfoCollection"));
       }
     } catch (Exception e) {
       throw new JOAException(e);
@@ -65,8 +64,8 @@ public class PropertyInfo {
    * @return PropertyInfo instance
    * @throws JOAException if creation fails
    */
-  public static PropertyInfo factory(Object iProp) throws JOAException {
-    return new PropertyInfo((IObject) iProp);
+  public static PropertyInfo factory(IObject iProp) throws JOAException {
+    return new PropertyInfo(iProp);
   }
 
   /**
