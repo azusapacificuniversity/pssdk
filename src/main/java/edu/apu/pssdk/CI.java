@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.Proxy;
 import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyHashMap;
 import org.graalvm.polyglot.proxy.ProxyObject;
 import psft.pt8.joa.IObject;
 import psft.pt8.joa.ISession;
@@ -306,6 +307,22 @@ public class CI implements Closeable {
   }
 
   /**
+   * Gets the data out of the CI as a HashMap. The data returned should be easily serializable to
+   * JSON or other formats in GraalPython.
+   *
+   * @return ProxyHashMap representing the data in the CI.
+   * @throws PssdkException If unable to get data out of the CI.
+   */
+  public ProxyHashMap toProxyHashMap() throws PssdkException {
+    try {
+      return CiRow.factory(iCi, getPropertyInfoCollection()).toProxyHashMap();
+    } catch (JOAException e) {
+      throw new PssdkException(
+          "Unable to get data out of the CI. Original error enclosed.", e, iSession);
+    }
+  }
+
+  /**
    * Gets the data out of the CI as a list of Objects. The data returned should be easily
    * serializable to JSON or other formats in GraalNodeJs. This method is intended for use after a
    * Find operation.
@@ -332,7 +349,7 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyHashMaps() throws PssdkException {
     try {
-      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyObjects();
+      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyHashMaps();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
