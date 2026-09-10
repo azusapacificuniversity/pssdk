@@ -3,11 +3,21 @@
 
 # PeopleSoft SDK
 
-Interact with Peoplesoft Component Interfaces using JavaScript and Python!
+Interact with Peoplesoft Component Interfaces using JavaScript, Python, Kotlin
+and Lucee!
 
 Without the Integration Broker!
 
 You need to provide the psjoa.jar file yourself.
+
+### Examples
+
+| Language | Framework | Example |
+| --- | --- | --- |
+| JavaScript | Express | [examples/nodejs/express](examples/nodejs/express) |
+| Python | Flask | [examples/python/flask](examples/python/flask) |
+| Kotlin | Spring Boot | [examples/kotlin/springboot](examples/kotlin/springboot) |
+| Lucee | CFML | [examples/lucee](examples/lucee) |
 
 ### Usage
 
@@ -19,9 +29,10 @@ console.log(result);
 
 ### Setup
 
-You can use this project through the GraalJS Node.js project. A container image
-is not provided; You need to provide your own `psjoa.jar` file and optionally a
-logger (project support SLF4J) and package everything in a single JAR.
+Use it from GraalVM (GraalJS Node.js, GraalPy) or from any JVM language
+(Kotlin, Lucee or plain Java). A container image is not provided; You need to
+provide your own `psjoa.jar` file and optionally a logger (project support
+SLF4J) and package everything in a single JAR.
 
 If you use Gradle, an example `build.gradle` would be:
 

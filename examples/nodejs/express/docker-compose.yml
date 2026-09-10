@@ -4,16 +4,17 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-      args:
-        NPM_TOKEN: $NPM_TOKEN
     env_file: .env
     environment:
       ENVIRONMENT: docker-compose
-      LOGGER_HOST: logsrv-prod-1a.fs.apu.edu
+      LOGGER_HOST: logserver.example.edu
       LOGGER_PORT: 12202
       LOG_LEVEL: debug
-      PS_AS_HOSTNAME: stu-dev-pub-01.fs.apu.edu
-      PS_AS_JOLTPORT: 9075
+      # App Server connection comes from .env — see .env.sample. Never commit real values here.
+      PS_APPSERVER_HOSTPORT:
+      PS_APPSERVER_DOMAINPW:
+      PS_APPSERVER_USERNAME:
+      PS_APPSERVER_PASSWORD:
     ports:
       - 3000:3000
     volumes:

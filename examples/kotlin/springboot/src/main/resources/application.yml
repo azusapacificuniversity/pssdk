@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: pssdk-example-kotlin
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    version: openapi_3_0
+  swagger-ui:
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+    display-request-duration: true
+    filter: true
+
+logging:
+  level:
+    edu.apu.pssdk: DEBUG

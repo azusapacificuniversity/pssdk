@@ -1,8 +1,6 @@
 FROM container-registry.oracle.com/graalvm/nodejs-community:latest
 MAINTAINER Azusa Pacific University
 
-ARG NPM_TOKEN
-
 RUN useradd -m -g root app \
  && chmod -R 750 /home/app
 
