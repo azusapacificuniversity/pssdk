@@ -37,8 +37,11 @@ def get_user_profile(userid: str):
     Returns:
         dict: A dictionary containing the user profile data.
     """
-    profile = component_interface("USER_PROFILE").get({"UserID": userid})
-    return jsonify(profile)
+    ci = component_interface("USER_PROFILE")
+    try:
+        return jsonify(ci.get({"UserID": userid}).toProxyHashMap())
+    finally:
+        ci.close()
 
 
 @app.route('/')
