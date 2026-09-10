@@ -19,12 +19,16 @@ You need to provide the psjoa.jar file yourself.
 | Kotlin | Spring Boot | [examples/kotlin/springboot](examples/kotlin/springboot) |
 | Lucee | CFML | [examples/lucee](examples/lucee) |
 
-### Usage
+### Usage (GraalJS)
 
 ```javascript
-const ci = AppServer.ci('MY_CI_NAME');
-const result = ci.get({ PARAM1: 'value1', PARAM2: 'value2' });
-console.log(result);
+const { AppServer } = require('pssdk');
+
+const appServer = AppServer.fromEnv();
+// `fetch` does a get, converts the CI to a plain object, and closes the session
+appServer.ci('MY_CI_NAME')
+  .fetch({ PARAM1: 'value1', PARAM2: 'value2' })
+  .then((result) => console.log(result));
 ```
 
 ### Setup
@@ -118,8 +122,8 @@ JavaScript.
 ```javascript
 const { AppServer } = require('pssdk');
 const appServer = new AppServer({
-    hostPort: 'myserver:9000',
-    domainPw: 'mypassword',
+    hostport: 'myserver:9000',
+    domainpw: 'mypassword',
     username: 'myuser',
     password: 'mypassword'
 });
