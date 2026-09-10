@@ -9,7 +9,7 @@
   "license": "Copyright Azusa Pacific University. All rights reserved.",
   "repository": {
     "type": "git",
-    "url": "https://gitea.apu.edu/intdev/pssdk-sapi"
+    "url": "https://github.com/azusapacificuniversity/pssdk"
   },
   "description": "PeopleSoft SDK System API, should eventually be merged to Peoplesoft SAPI",
   "dependencies": {

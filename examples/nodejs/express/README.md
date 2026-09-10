@@ -9,6 +9,13 @@ PSJOA is required for each PeopleSoft environment. The version of the PSJOA
 jar file should match the version of PeopleTools in your App Server, and you
 should probably grab the jar file from there.
 
+> [!NOTE]
+>
+> `com.oracle.peoplesoft:psjoa` is not published to Maven Central. Supply it
+> yourself — a local Maven repository, a Gradle `flatDir`, or an artifact
+> installed into `~/.m2` — and match the version to the PeopleTools release of
+> your App Server.
+
 ## Build and Run with Docker
 
 To build a docker container locally

@@ -1,0 +1,8 @@
+.git
+.gradle
+.env
+.env.sample
+docker-compose.yml
+README.md
+.gitignore
+src
