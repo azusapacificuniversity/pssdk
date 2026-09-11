@@ -39,10 +39,10 @@ public class Is {
   }
 
   /**
-   * Checks if the given object is a List<Map<String, Object>>
+   * Checks if the given object is a {@code List<Map<String, Object>>}
    *
    * @param obj the object to check
-   * @return true if the object is a List<Map<String, Object>>, false otherwise
+   * @return true if the object is a {@code List<Map<String, Object>>}, false otherwise
    */
   public static boolean listOfStringToObjectMaps(Object obj) {
     try {

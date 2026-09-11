@@ -46,16 +46,17 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
    *
    * @param propInfoCol The underlying PSJOA CIPropertyInfoCollection object.
    * @return A new PropertyInfoCollection instance.
+   * @throws JOAException if an error occurs
    */
   public static PropertyInfoCollection factory(IObject propInfoCol) throws JOAException {
     return new PropertyInfoCollection(propInfoCol);
   }
 
   /**
-   * Retrieves a PropertyInfo object at the specified index.
+   * Retrieves a PropertyInfo object by property name.
    *
-   * @param i The 0-based index of the PropertyInfo to retrieve.
-   * @return The PropertyInfo object at the given index.
+   * @param propName The name of the property to retrieve.
+   * @return The PropertyInfo object for the given name, or null if there is none.
    * @throws JOAException if an error occurs during the retrieval.
    */
   public PropertyInfo get(String propName) throws JOAException {
