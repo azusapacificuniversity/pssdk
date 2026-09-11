@@ -24,7 +24,7 @@ public class PropertyInfo {
   /**
    * Constructor to initialize PropertyInfo with IObject.
    *
-   * @param iProp IObject representing the CI Property Info
+   * @param iPropInfo IObject representing the CI Property Info
    * @throws JOAException if initialization fails
    */
   public PropertyInfo(IObject iPropInfo) throws JOAException {

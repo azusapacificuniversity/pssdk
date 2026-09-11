@@ -29,6 +29,7 @@ public class CI implements Closeable {
    *
    * @param iCi The underlying JOA IObject representing the CI.
    * @param session The ISession that created the CI.
+   * @param pic PropertyInfoCatalog of the CI.
    * @throws JOAException If the provided IObject is null.
    */
   public CI(IObject iCi, ISession session, PropertyInfoCatalog pic) throws JOAException {
@@ -46,6 +47,7 @@ public class CI implements Closeable {
    *
    * @param obj The JOA IObject representing the CI.
    * @param session The ISession that created the CI.
+   * @param pic PropertyInfoCatalog of the CI.
    * @return A CI instance wrapping the provided IObject.
    * @throws JOAException If unable to create the CI instance.
    */
@@ -243,7 +245,7 @@ public class CI implements Closeable {
   }
 
   /**
-   * Invokes the standard CANCEL method on the CI, then closes the CI session.
+   * Invokes the standard CANCEL method on the CI.
    *
    * @throws PssdkException If unable to cancel the CI.
    */
