@@ -51,10 +51,11 @@ mavenPublishing {
 }
 
 dependencies {
-    implementation 'org.graalvm.polyglot:polyglot:25.0.1'
+    implementation 'org.graalvm.polyglot:polyglot:25.3.4.1'
     implementation 'org.slf4j:slf4j-api:2.0.17'
 
-    compileOnly    'com.oracle.peoplesoft:psjoa:8.60.+'
+    compileOnly    'com.oracle.peoplesoft:psjoa:[8.60,9)'
+    testImplementation 'com.oracle.peoplesoft:psjoa:[8.60,9)'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -69,29 +70,11 @@ testing {
         test {
             useJUnitJupiter()
         }
-
-        integrationTest(JvmTestSuite) {
-            dependencies {
-                implementation project()
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        shouldRunAfter(test)
-                    }
-                }
-            }
-        }
     }
 }
 
 tasks.named("compileJava") {
     dependsOn("spotlessApply")
-}
-
-tasks.named('check') {
-    dependsOn(testing.suites.integrationTest)
 }
 
 spotless {
