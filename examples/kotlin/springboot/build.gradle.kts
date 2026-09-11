@@ -23,7 +23,7 @@ dependencies {
 
     implementation("edu.apu.pssdk:pssdk:4.0.0")
     // CI.toProxyObject() returns a Graal ProxyObject; pssdk keeps polyglot runtime-scoped.
-    implementation("org.graalvm.polyglot:polyglot:25.0.1")
+    implementation("org.graalvm.polyglot:polyglot:25.3.4.1")
     implementation("com.oracle.peoplesoft:psjoa:$psjoaVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
