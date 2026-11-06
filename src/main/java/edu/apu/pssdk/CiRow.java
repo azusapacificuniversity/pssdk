@@ -46,9 +46,7 @@ public class CiRow {
   }
 
   /**
-   * Check if the CI Row is empty, i.e. one of its key properties holds an empty string. Only the
-   * scalar keys from {@link PropertyInfoCollection#keys()} are checked; child collections are never
-   * keys.
+   * Check if the CI Row is empty, i.e. one of its key properties holds an empty string.
    *
    * @return true if the CI Row is empty, false otherwise
    * @throws JOAException if check fails
