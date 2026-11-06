@@ -30,24 +30,24 @@ public class PropertyInfo {
   public PropertyInfo(IObject iPropInfo) throws JOAException {
     try {
       this.name = iPropInfo.getProperty("Name").toString();
-      // set the boolean fields isKey, isCollection, isReadOnly, and isRequired
-      this.isKey = (boolean) iPropInfo.getProperty("Key");
+      // set the boolean fields isCollection and isReadOnly
       this.isCollection = (boolean) iPropInfo.getProperty("IsCollection");
       this.isReadOnly = (boolean) iPropInfo.getProperty("IsReadOnly");
-      this.isRequired = (boolean) iPropInfo.getProperty("Required");
 
-      // set the boolean fields isFindKey and isListKey properties
-      for (Field field : iPropInfo.getClass().getDeclaredFields()) {
-        if (field.getName().equals("m_fUseEdit")) {
-          field.setAccessible(true);
-          int useEdit = (int) field.get(iPropInfo);
-          this.isFindKey = (useEdit & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
-          this.isListKey = (useEdit & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
-          break;
+      // set the boolean fields isKey, isRequired, isFindKey and isListKey
+      if (!this.isCollection) {
+        this.isKey = (boolean) iPropInfo.getProperty("Key");
+        this.isRequired = (boolean) iPropInfo.getProperty("Required");
+        for (Field field : iPropInfo.getClass().getDeclaredFields()) {
+          if (field.getName().equals("m_fUseEdit")) {
+            field.setAccessible(true);
+            int useEdit = (int) field.get(iPropInfo);
+            this.isFindKey = (useEdit & ALTERNATE_SEARCH_KEY) == ALTERNATE_SEARCH_KEY;
+            this.isListKey = (useEdit & LISTBOX_ITEM_NUM) == LISTBOX_ITEM_NUM;
+            break;
+          }
         }
-      }
-
-      if (this.isCollection) {
+      } else {
         this.propInfoCol =
             PropertyInfoCollection.factory(
                 (IObject) iPropInfo.getProperty("PropertyInfoCollection"));
