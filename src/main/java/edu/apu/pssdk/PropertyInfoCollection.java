@@ -64,16 +64,24 @@ public class PropertyInfoCollection implements Iterable<PropertyInfo> {
   }
 
   /**
-   * Returns a list of PropertyInfo objects that are identified as keys in this collection.
+   * Returns a list of PropertyInfo objects that are identified as keys in this collection. These
+   * are what a row is matched on and checked for emptiness by.
    *
-   * @return A list of PropertyInfo objects that are keys.
+   * <p>A child collection is never returned, even when PSJOA flags it as a key. PSJOA derives
+   * {@code Key} (like {@code Required} and {@code Prompt}) from bits of {@code m_fUseEdit}, which
+   * holds no field metadata for a collection: on RL_ROOM the value for RL_ROOM_TBL's child
+   * collections changes from one read to the next, so they come and go as keys between sessions. A
+   * collection has no value that incoming data can be compared with either, so counting it as a key
+   * makes every existing row look unmatched.
+   *
+   * @return A list of PropertyInfo objects that are scalar keys.
    * @throws JOAException if an error occurs during the PeopleSoft API call while checking property
    *     info.
    */
   public List<PropertyInfo> keys() throws JOAException {
     List<PropertyInfo> keys = new ArrayList<PropertyInfo>();
     for (PropertyInfo pi : this) {
-      if (pi.isKey()) keys.add(pi);
+      if (pi.isKey() && !pi.isCollection()) keys.add(pi);
     }
     return keys;
   }

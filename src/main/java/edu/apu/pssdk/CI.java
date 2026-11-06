@@ -22,6 +22,7 @@ public class CI implements Closeable {
   ISession iSession;
   PropertyInfoCatalog propInfoCatalog;
   private boolean findIsInvoked;
+  private IObject findResult;
   private List<String> stdOps = List.of("get", "set", "find", "save", "create", "cancel");
 
   /**
@@ -145,7 +146,9 @@ public class CI implements Closeable {
   }
 
   /**
-   * Performs a Find operation on the CI using the provided FINDKEYS properties as keys.
+   * Performs a Find operation on the CI using the provided FINDKEYS properties as keys. The matches
+   * are kept on the CI; read them with `toJSON`, `toProxyArrayOfProxyObjects` or
+   * `toProxyArrayOfProxyHashMaps`. Finding nothing is not an error, it just yields no rows.
    *
    * @param props A map of property names and values to use as FINDKEYS keys for the Find operation.
    * @return The CI instance.
@@ -155,10 +158,10 @@ public class CI implements Closeable {
     try {
       for (Map.Entry<String, Object> entry : props.entrySet())
         iCi.setProperty(entry.getKey(), entry.getValue());
-      Object[] args = new Object[0];
-      if (!((Boolean) (iCi.invokeMethod("Find", args))).booleanValue()) {
-        throw new PssdkException("Unable to do a find on the CI.", iSession);
-      }
+      // PSJOA answers Find with a CICollection of CI objects, one per match (empty when nothing
+      // matched), not with a Boolean.
+      Object result = iCi.invokeMethod("Find", new Object[0]);
+      findResult = (result instanceof IObject) ? (IObject) result : null;
       findIsInvoked = true;
       return this;
     } catch (JOAException e) {
@@ -334,7 +337,8 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyObjects() throws PssdkException {
     try {
-      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyObjects();
+      CiScroll rows = findResultRows();
+      return rows == null ? ProxyArray.fromArray() : rows.toProxyArrayOfProxyObjects();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
@@ -351,11 +355,25 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyHashMaps() throws PssdkException {
     try {
-      return CiScroll.factory(iCi, getFindPropertyInfoCollection()).toProxyArrayOfProxyHashMaps();
+      CiScroll rows = findResultRows();
+      return rows == null ? ProxyArray.fromArray() : rows.toProxyArrayOfProxyHashMaps();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
     }
+  }
+
+  /**
+   * Wraps the collection the last Find returned so its rows can be read through the FINDKEYS
+   * properties. The collection answers to {@code Count} and {@code Item} like a scroll; the root CI
+   * itself does not.
+   *
+   * @return the Find result as a CiScroll, or null if Find has not returned a collection.
+   * @throws JOAException if the FINDKEYS collection can not be read.
+   */
+  private CiScroll findResultRows() throws JOAException {
+    if (findResult == null) return null;
+    return CiScroll.factory(findResult, getFindPropertyInfoCollection());
   }
 
   /*********************************/
