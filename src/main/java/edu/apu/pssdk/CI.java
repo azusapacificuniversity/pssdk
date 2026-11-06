@@ -21,7 +21,6 @@ public class CI implements Closeable {
   IObject iCi;
   ISession iSession;
   PropertyInfoCatalog propInfoCatalog;
-  private boolean findIsInvoked;
   private IObject findResult;
   private List<String> stdOps = List.of("get", "set", "find", "save", "create", "cancel");
 
@@ -40,7 +39,6 @@ public class CI implements Closeable {
     this.iCi = iCi;
     this.iSession = session;
     this.propInfoCatalog = pic;
-    this.findIsInvoked = false;
   }
 
   /**
@@ -113,6 +111,7 @@ public class CI implements Closeable {
    * @throws PssdkException If unable to perform the Get operation.
    */
   public CI get(Map<String, Object> props) throws PssdkException {
+    findResult = null;
     try {
       CiRow createRoot = CiRow.factory(iCi, getGetKeyInfoCollection());
       createRoot.populateWith(props);
@@ -155,14 +154,17 @@ public class CI implements Closeable {
    * @throws PssdkException If unable to perform the Find operation.
    */
   public CI find(Map<String, Object> props) throws PssdkException {
+    findResult = null;
     try {
       for (Map.Entry<String, Object> entry : props.entrySet())
         iCi.setProperty(entry.getKey(), entry.getValue());
       // PSJOA answers Find with a CICollection of CI objects, one per match (empty when nothing
       // matched), not with a Boolean.
       Object result = iCi.invokeMethod("Find", new Object[0]);
-      findResult = (result instanceof IObject) ? (IObject) result : null;
-      findIsInvoked = true;
+      if (!(result instanceof IObject)) {
+        throw new PssdkException("Unable to do a find on the CI.", iSession);
+      }
+      findResult = (IObject) result;
       return this;
     } catch (JOAException e) {
       throw new PssdkException(
@@ -230,6 +232,7 @@ public class CI implements Closeable {
    * @throws PssdkException If unable to perform the Create operation.
    */
   public CI create(Map<String, Object> data) throws PssdkException {
+    findResult = null;
     try {
       CiRow createRoot = CiRow.factory(iCi, getCreateKeyInfoCollection());
       createRoot.populateWith(data);
@@ -288,7 +291,7 @@ public class CI implements Closeable {
    * @throws PssdkException If unable to get data out of the CI.
    */
   public Proxy toJSON() throws PssdkException {
-    if (this.findIsInvoked) {
+    if (findResult != null) {
       return toProxyArrayOfProxyObjects();
     } else {
       return toProxyObject();
@@ -337,8 +340,7 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyObjects() throws PssdkException {
     try {
-      CiScroll rows = findResultRows();
-      return rows == null ? ProxyArray.fromArray() : rows.toProxyArrayOfProxyObjects();
+      return findResultRows().toProxyArrayOfProxyObjects();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
@@ -355,8 +357,7 @@ public class CI implements Closeable {
    */
   public ProxyArray toProxyArrayOfProxyHashMaps() throws PssdkException {
     try {
-      CiScroll rows = findResultRows();
-      return rows == null ? ProxyArray.fromArray() : rows.toProxyArrayOfProxyHashMaps();
+      return findResultRows().toProxyArrayOfProxyHashMaps();
     } catch (JOAException e) {
       throw new PssdkException(
           "Unable to get list data out of the CI. Original error enclosed.", e, iSession);
@@ -368,11 +369,15 @@ public class CI implements Closeable {
    * properties. The collection answers to {@code Count} and {@code Item} like a scroll; the root CI
    * itself does not.
    *
-   * @return the Find result as a CiScroll, or null if Find has not returned a collection.
+   * @return the Find result as a CiScroll.
+   * @throws PssdkException if no Find result is held (find was not called, or a later operation
+   *     replaced it).
    * @throws JOAException if the FINDKEYS collection can not be read.
    */
-  private CiScroll findResultRows() throws JOAException {
-    if (findResult == null) return null;
+  private CiScroll findResultRows() throws PssdkException, JOAException {
+    if (findResult == null) {
+      throw new PssdkException("No Find result to read. Call find() first.", iSession);
+    }
     return CiScroll.factory(findResult, getFindPropertyInfoCollection());
   }
 
