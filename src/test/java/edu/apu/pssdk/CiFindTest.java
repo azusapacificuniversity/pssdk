@@ -14,6 +14,7 @@ import static psft.pt8.joa.JoaFixture.prop;
 import java.util.List;
 import java.util.Map;
 import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyObject;
 import org.junit.jupiter.api.Test;
 import psft.pt8.joa.FakeCi;
 import psft.pt8.joa.FakeSession;
@@ -29,6 +30,7 @@ class CiFindTest {
   private static FakeCi rooms() {
     return ci("RL_ROOM")
         .properties(prop("INSTITUTION").key(), prop("RL_BLDG_CD").key(), prop("RL_ROOM_CD").key())
+        .getKeys(prop("INSTITUTION").key(), prop("RL_BLDG_CD").key(), prop("RL_ROOM_CD").key())
         .findKeys(
             prop("INSTITUTION").key().listKey(),
             prop("RL_BLDG_CD").key().listKey(),
@@ -87,6 +89,22 @@ class CiFindTest {
 
     assertEquals(0, size(ci.toProxyArrayOfProxyObjects()));
     assertEquals(0, size(ci.toProxyArrayOfProxyHashMaps()));
+  }
+
+  @Test
+  void toJsonAfterAGetIsTheRecordNotTheEarlierMatches() throws Exception {
+    Map<String, Object> b1 =
+        Map.of("INSTITUTION", "APU", "RL_BLDG_CD", "SHIRE", "RL_ROOM_CD", "B1");
+    FakeCi fake =
+        rooms()
+            .whenFindReturns(
+                List.of(Map.of("INSTITUTION", "APU", "RL_BLDG_CD", "SHIRE", "RL_ROOM_CD", "A1")))
+            .whenGetReturns(b1);
+
+    Object out = ciWith(fake).find(Map.of("RL_BLDG_CD", "SHIRE")).get(b1).toJSON();
+
+    assertInstanceOf(ProxyObject.class, out);
+    assertEquals("B1", member(out, "RL_ROOM_CD"));
   }
 
   @Test
