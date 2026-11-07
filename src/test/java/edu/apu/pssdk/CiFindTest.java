@@ -108,6 +108,14 @@ class CiFindTest {
   }
 
   @Test
+  void readingFindRowsWithoutAFindFails() throws Exception {
+    CI ci = ciWith(rooms());
+
+    assertThrows(PssdkException.class, ci::toProxyArrayOfProxyObjects);
+    assertThrows(PssdkException.class, ci::toProxyArrayOfProxyHashMaps);
+  }
+
+  @Test
   void anAppServerErrorDuringFindIsWrappedAsAPssdkException() throws Exception {
     CI ci = ciWith(rooms().failFind());
 
