@@ -1,0 +1,163 @@
+# Provisions a GitHub release when a merge to main changes the project version.
+#
+# The version lives in build.gradle (`version = 'x.y.z'`) and must match
+# lib/npm/package.json. When a push to main (which is what merging a PR is)
+# changes the build.gradle version, this tags the pushed commit v<version> and
+# creates a GitHub release. The notes are that version's `## [x.y.z]` section of
+# CHANGELOG.md, or generated notes if there is none.
+#
+# It compares the version before the push (github.event.before) with the
+# version after it (github.sha), so merge commits, squash merges and rebase
+# merges are all handled. Re-runs are safe: an existing tag or release is left
+# alone. Run it by hand (workflow_dispatch) to release the current version on
+# main if an earlier run failed.
+#
+# Publishing to Maven Central and npm is still done by hand.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - build.gradle
+      - lib/npm/package.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.create.outcome == 'success' }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Read the version
+        id: version
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          gradle_version() {
+            git show "$1:build.gradle" \
+              | sed -nE "s/^version[[:space:]]*=[[:space:]]*['\"]([^'\"]+)['\"].*/\1/p" \
+              | head -n 1
+          }
+
+          version="$(gradle_version "$GITHUB_SHA")"
+          npm_version="$(git show "$GITHUB_SHA:lib/npm/package.json" | jq -r '.version // empty')"
+
+          if [ -z "$version" ]; then
+            echo "::error file=build.gradle::No \`version = '...'\` line found in build.gradle."
+            exit 1
+          fi
+          if [ "$version" != "$npm_version" ]; then
+            echo "::error file=lib/npm/package.json::Version mismatch: build.gradle has '$version' but lib/npm/package.json has '${npm_version}'. Bump both in the same PR."
+            exit 1
+          fi
+
+          previous=""
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            previous="$(gradle_version "$BEFORE")"
+          fi
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            changed=true
+            echo "Manual run: releasing $version if it has not been released yet."
+          elif [ "$version" != "$previous" ]; then
+            changed=true
+            echo "Version changed: '${previous}' -> '$version'."
+          else
+            changed=false
+            echo "Version unchanged at $version; nothing to release."
+          fi
+
+          prerelease=false
+          case "$version" in *-*) prerelease=true ;; esac
+
+          {
+            echo "version=$version"
+            echo "tag=v$version"
+            echo "changed=$changed"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Skip if already released
+        id: existing
+        if: steps.version.outputs.changed == 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          skip=false
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::notice::Release $TAG already exists; nothing to do."
+            skip=true
+          elif git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+            echo "::warning::Tag $TAG already exists but has no release. Create the release by hand, or delete the tag and re-run this workflow."
+            skip=true
+          else
+            echo "No tag or release for $TAG yet."
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
+      - name: Extract the release notes from CHANGELOG.md
+        if: steps.version.outputs.changed == 'true' && steps.existing.outputs.skip == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Everything under `## [<version>] ...` up to the next `## ` heading,
+          # without leading or trailing blank lines.
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { lines[++n] = $0 }
+            END {
+              first = 1; while (first <= n && lines[first] ~ /^[[:space:]]*$/) first++
+              last = n; while (last >= first && lines[last] ~ /^[[:space:]]*$/) last--
+              for (i = first; i <= last; i++) print lines[i]
+            }
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if [ -s "$RUNNER_TEMP/notes.md" ]; then
+            echo "Using the [$VERSION] section of CHANGELOG.md:"
+            cat "$RUNNER_TEMP/notes.md"
+          else
+            echo "::warning file=CHANGELOG.md::No '## [$VERSION]' section in CHANGELOG.md; using generated release notes."
+          fi
+
+      - name: Create the release
+        id: create
+        if: steps.version.outputs.changed == 'true' && steps.existing.outputs.skip == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          args=(--target "$GITHUB_SHA" --title "$TAG")
+          if [ -s "$RUNNER_TEMP/notes.md" ]; then
+            args+=(--notes-file "$RUNNER_TEMP/notes.md")
+          else
+            args+=(--generate-notes)
+          fi
+          if [ "$PRERELEASE" = "true" ]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$TAG" "${args[@]}"
+          echo "Released $TAG at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
