@@ -5,6 +5,9 @@ A release publishes two artifacts from this repository:
 - the Java library to Maven Central as `edu.apu.pssdk:pssdk`
 - the Node.js wrapper in `lib/npm/` to npm as `pssdk`
 
+The Maven and npm versions always match: both artifacts are released together
+under the same version, even when only one of them changed.
+
 Maven Central only accepts signed artifacts, so you need the signing key and
 Central credentials set up locally before releasing.
 
