@@ -101,6 +101,10 @@ Run Gradle with the `shadowJar` task to have a single jar build.
 $ ./gradlew clean build shadowJar
 ```
 
+### Releasing
+
+See [RELEASING.md](RELEASING.md).
+
 ### Environment Variables
 
 The project can make use of the following environment variables:
