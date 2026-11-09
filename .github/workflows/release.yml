@@ -12,7 +12,21 @@
 # alone. Run it by hand (workflow_dispatch) to release the current version on
 # main if an earlier run failed.
 #
-# Publishing to Maven Central and npm is still done by hand.
+# Once the release exists, two jobs publish it: lib/npm to npm, and the jar to
+# Maven Central. Each one checks for its secrets first. When a secret is
+# missing, the job warns and skips instead of failing. Add the secret, then use
+# "Re-run failed jobs" or re-run that job to publish.
+#
+#   npm:           secret NPM_TOKEN (a granular token that can publish pssdk).
+#   Maven Central: secrets MAVEN_CENTRAL_USERNAME and MAVEN_CENTRAL_PASSWORD
+#                  (a Central Portal user token), SIGNING_KEY (the ASCII-armored
+#                  private key) and SIGNING_KEY_PASSWORD, and MVN_TOKEN (Gitea).
+#                  psjoa, which pssdk compiles against, is only on
+#                  gitea.apu.edu, which is reachable only through APU's
+#                  Cloudflare Zero Trust network. So the job also needs the
+#                  variable CLOUDFLARE_TEAM and the secrets CLOUDFLARE_CLIENT_ID
+#                  and CLOUDFLARE_CLIENT_SECRET, a service token that a device
+#                  enrollment rule allows to enroll WARP.
 
 name: Release
 
@@ -38,6 +52,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
       released: ${{ steps.create.outcome == 'success' }}
     env:
       GH_TOKEN: ${{ github.token }}
@@ -161,3 +176,189 @@ jobs:
           fi
           gh release create "$TAG" "${args[@]}"
           echo "Released $TAG at $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+
+  publish-npm:
+    name: Publish to npm
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    env:
+      VERSION: ${{ needs.release.outputs.version }}
+      PRERELEASE: ${{ needs.release.outputs.prerelease }}
+    steps:
+      - name: Check for the npm token
+        id: secrets
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::warning::NPM_TOKEN is not set, so pssdk@$VERSION was not published to npm. Add the secret and re-run this job."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "$(npm view "pssdk@$VERSION" version 2> /dev/null)" = "$VERSION" ]; then
+            echo "::notice::pssdk@$VERSION is already on npm; nothing to do."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7.0.1
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v7.1.0
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Publish lib/npm
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lib/npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag=latest
+          if [ "$PRERELEASE" = "true" ]; then
+            # Same dist-tags the package already uses: 4.1.0-rc1 -> rc, 3.0.0-alpha.4 -> alpha.
+            pre="${VERSION#*-}"
+            tag="${pre%%[.0-9]*}"
+            tag="${tag:-next}"
+          fi
+          npm publish --provenance --tag "$tag"
+          echo "Published pssdk@$VERSION to npm with dist-tag $tag." >> "$GITHUB_STEP_SUMMARY"
+
+  publish-maven:
+    name: Publish to Maven Central
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.release.outputs.version }}
+    steps:
+      - name: Check for the publishing secrets
+        id: secrets
+        env:
+          MVN_TOKEN: ${{ secrets.MVN_TOKEN }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          CLOUDFLARE_TEAM: ${{ vars.CLOUDFLARE_TEAM }}
+          CLOUDFLARE_CLIENT_ID: ${{ secrets.CLOUDFLARE_CLIENT_ID }}
+          CLOUDFLARE_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_CLIENT_SECRET }}
+        run: |
+          missing=()
+          for name in MVN_TOKEN MAVEN_CENTRAL_USERNAME MAVEN_CENTRAL_PASSWORD SIGNING_KEY \
+            SIGNING_KEY_PASSWORD CLOUDFLARE_TEAM CLOUDFLARE_CLIENT_ID CLOUDFLARE_CLIENT_SECRET; do
+            [ -n "${!name}" ] || missing+=("$name")
+          done
+          pom="https://repo1.maven.org/maven2/edu/apu/pssdk/pssdk/$VERSION/pssdk-$VERSION.pom"
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::warning::edu.apu.pssdk:pssdk:$VERSION was not published to Maven Central; missing: ${missing[*]}. Add them and re-run this job."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "$(curl -s -o /dev/null -w '%{http_code}' "$pom")" = "200" ]; then
+            echo "::notice::edu.apu.pssdk:pssdk:$VERSION is already on Maven Central; nothing to do."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7.0.1
+        if: steps.secrets.outputs.ready == 'true'
+
+      # psjoa is served only by gitea.apu.edu, so join APU's Cloudflare Zero Trust
+      # network with the service token before Gradle resolves dependencies.
+      - name: Connect to Cloudflare WARP
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_TEAM: ${{ vars.CLOUDFLARE_TEAM }}
+          CLOUDFLARE_CLIENT_ID: ${{ secrets.CLOUDFLARE_CLIENT_ID }}
+          CLOUDFLARE_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          sudo mkdir -p /var/lib/cloudflare-warp
+          sudo tee /var/lib/cloudflare-warp/mdm.xml > /dev/null << EOF
+          <dict>
+            <key>organization</key><string>${CLOUDFLARE_TEAM}</string>
+            <key>auth_client_id</key><string>${CLOUDFLARE_CLIENT_ID}</string>
+            <key>auth_client_secret</key><string>${CLOUDFLARE_CLIENT_SECRET}</string>
+            <key>service_mode</key><string>warp</string>
+            <key>auto_connect</key><integer>1</integer>
+            <key>onboarding</key><false/>
+          </dict>
+          EOF
+          curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg \
+            | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" \
+            | sudo tee /etc/apt/sources.list.d/cloudflare-client.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloudflare-warp
+          for _ in $(seq 1 60); do
+            warp-cli --accept-tos status 2> /dev/null | grep -q Connected && break
+            sleep 2
+          done
+          warp-cli --accept-tos status
+          code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://gitea.apu.edu/api/packages/intdev/maven/ || true)"
+          if [ "$code" = "000" ]; then
+            echo "::error::gitea.apu.edu is not reachable over WARP. Check that a device enrollment rule allows the service token, and the Zero Trust split tunnel and DNS settings for apu.edu."
+            exit 1
+          fi
+          echo "gitea.apu.edu answered HTTP $code."
+
+      - uses: actions/setup-java@v6.1.0
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # gradle-wrapper.jar is not in the repo, so ./gradlew can't run. Install the
+      # Gradle version the wrapper names instead.
+      - name: Read the wrapper's Gradle version
+        id: gradle
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          version="$(sed -nE 's#^distributionUrl=.*/gradle-([^-]+)-(bin|all)\.zip$#\1#p' gradle/wrapper/gradle-wrapper.properties)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: gradle/actions/setup-gradle@v6.4.1
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          gradle-version: ${{ steps.gradle.outputs.version }}
+          cache-disabled: true
+
+      - name: Import the signing key
+        id: gpg
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          echo "key-id=$(gpg --list-secret-keys --with-colons | awk -F: '$1 == "sec" { print $5; exit }')" >> "$GITHUB_OUTPUT"
+
+      # build.gradle signs with `useGpgCmd()`, so hand Gradle the imported key.
+      - name: Test, then publish and release to Maven Central
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          MVN_TOKEN: ${{ secrets.MVN_TOKEN }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_KEY_ID: ${{ steps.gpg.outputs.key-id }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          gradle test publishAndReleaseToMavenCentral --no-configuration-cache \
+            -Psigning.gnupg.executable=gpg \
+            -Psigning.gnupg.keyName="$SIGNING_KEY_ID" \
+            -Psigning.gnupg.passphrase="$SIGNING_KEY_PASSWORD"
+          echo "Published edu.apu.pssdk:pssdk:$VERSION to Maven Central." >> "$GITHUB_STEP_SUMMARY"
