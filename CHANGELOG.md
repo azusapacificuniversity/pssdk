@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented in this file.
 
+## [4.0.1] - 2026-11-09
+
+A bug-fix release for collections and `find()`, plus dependency and release
+housekeeping.
+
+### Fixes
+
+- A child collection is no longer treated as a key. PSJOA derives a property's
+  Key, Required, Prompt, alternate-search-key and list-box flags from field
+  metadata that a collection doesn't have, so on collections those flags are
+  noise that changes from one read to the next. When a collection came back as a
+  key, `set()` could never match the rows already in a scroll: it deleted them
+  and inserted new ones, which left an extra row after `create()` and made the
+  save fail. These flags are now ignored on collections.
+- `find()` (and `search()` in Node.js) works. It used to cast the result of Find
+  to `Boolean` and always threw `ClassCastException`; it now reads the
+  `CICollection` PSJOA returns, and a find with no matches yields no rows.
+- `toJSON()` after a `get()` or `create()` returns that record, even when the
+  same CI was used for a `find()` earlier. Reading the find rows without calling
+  `find()` first now throws a `PssdkException`.
+
+### Other changes
+
+- Publications are signed, as Maven Central requires.
+- The Node.js wrapper requires `piscina` `^5.3.2`, which fixes the
+  prototype-pollution issue GHSA-67c8-pqhq-4rmx.
+- The release process is documented in `RELEASING.md`.
+
+For a full list of changes, see the [compare view][4.0.1].
+
 ## [4.0.0] - 2026-09-11
 
 This is a breaking release mainly because of the separation of `cancel()` and
@@ -40,5 +70,7 @@ also added to allow invoking non-standard CI operations.
 - A collection carrying the alternate-search-key bit is no longer dropped from a
   GET. 
 
-For a full list of changes, see the [compare view](
-[4.0.0]: https://github.com/azusapacificuniversity/pssdk/compare/v3.0.0...v4.0.0)
+For a full list of changes, see the [compare view][4.0.0].
+
+[4.0.1]: https://github.com/azusapacificuniversity/pssdk/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/azusapacificuniversity/pssdk/compare/v3.0.0...v4.0.0
