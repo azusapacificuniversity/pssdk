@@ -46,22 +46,16 @@ public class CiRow {
   }
 
   /**
-   * Check if the CI Row is empty (all properties have empty strings as values).
+   * Check if the CI Row is empty, i.e. one of its key properties holds an empty string.
    *
    * @return true if the CI Row is empty, false otherwise
    * @throws JOAException if check fails
    */
   public boolean isEmpty() throws JOAException {
-    boolean result = false;
-    for (PropertyInfo pi : propInfoCol) {
-      if (!pi.isKey()) continue;
-
-      if (get(pi).toString().equals("")) {
-        result = true;
-        break;
-      }
+    for (PropertyInfo key : propInfoCol.keys()) {
+      if (get(key).toString().equals("")) return true;
     }
-    return result;
+    return false;
   }
 
   /**

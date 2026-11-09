@@ -12,9 +12,9 @@ import java.util.Map;
  * fake only has to answer {@code getProperty} / {@code setProperty} / {@code invokeMethod}. Nothing
  * here talks to an app server.
  *
- * <p>Note the dual role of the root object, which mirrors real PSJOA: before a Find it behaves like
- * a row (properties by name); after a Find the SDK treats it as a collection and asks it for {@code
- * Count} and {@code Item}.
+ * <p>As on a real app server, Find does not turn the root object into a collection: it returns a
+ * separate {@link FakeFindCollection} holding the matches, and the root keeps answering only to its
+ * own properties (asking it for {@code Count} fails).
  */
 public final class FakeCi implements IObject {
 
@@ -22,10 +22,10 @@ public final class FakeCi implements IObject {
   private final FakeRow root;
   private final Map<String, Object> options = new LinkedHashMap<>();
   private final List<String> calls = new ArrayList<>();
-  private final List<FakeRow> findRows = new ArrayList<>();
   private final Map<String, Object> operationResults = new LinkedHashMap<>();
 
   private Map<String, Object> getResult = Map.of();
+  private Map<String, Object> createResult = Map.of();
   private List<Map<String, Object>> findResult = List.of();
   private Map<String, Object> savedData;
   private boolean getSucceeds = true;
@@ -56,7 +56,6 @@ public final class FakeCi implements IObject {
       return new FakePropertyInfoCollection(spec.createKeys);
     if (JoaNames.is(name, "FindKeyInfoCollection"))
       return new FakePropertyInfoCollection(spec.findKeys);
-    if (JoaNames.is(name, "Count")) return (long) findRows.size();
 
     String option = JoaNames.keyOf(options, name);
     if (option != null) return options.get(option);
@@ -81,28 +80,26 @@ public final class FakeCi implements IObject {
       root.apply(getResult);
       return Boolean.TRUE;
     }
-    if (JoaNames.is(name, "Create")) return createSucceeds;
+    if (JoaNames.is(name, "Create")) {
+      if (!createSucceeds) return Boolean.FALSE;
+      root.apply(createResult);
+      return Boolean.TRUE;
+    }
     if (JoaNames.is(name, "Save")) {
       savedData = root.snapshot();
       return saveSucceeds;
     }
     if (JoaNames.is(name, "Find")) {
-      if (!findSucceeds) return Boolean.FALSE;
-      findRows.clear();
+      if (!findSucceeds) throw new JOAException("Find failed on the app server");
+      List<FakeRow> matches = new ArrayList<>();
       for (Map<String, Object> row : findResult) {
         FakeRow r = new FakeRow(spec.findKeys);
         r.apply(row);
-        findRows.add(r);
+        matches.add(r);
       }
-      return Boolean.TRUE;
+      return new FakeFindCollection(matches);
     }
     if (JoaNames.is(name, "Cancel")) return cancelSucceeds;
-    if (JoaNames.is(name, "Item")) {
-      int index = (int) ((Number) args[0]).longValue();
-      if (index < 0 || index >= findRows.size())
-        throw new JOAException("Find result index out of range: " + index);
-      return findRows.get(index);
-    }
     String operation = JoaNames.keyOf(operationResults, name);
     if (operation != null) return operationResults.get(operation);
     throw new JOAException("Unknown CI method: " + name);
@@ -123,6 +120,15 @@ public final class FakeCi implements IObject {
   /** Data a successful Get should load into the CI. */
   public FakeCi whenGetReturns(Map<String, Object> data) {
     this.getResult = data;
+    return this;
+  }
+
+  /**
+   * Data a successful Create should load into the CI, standing in for the defaults PeopleSoft puts
+   * on a new component, such as the first effective-dated row of a scroll.
+   */
+  public FakeCi whenCreateReturns(Map<String, Object> data) {
+    this.createResult = data;
     return this;
   }
 
@@ -156,6 +162,7 @@ public final class FakeCi implements IObject {
     return this;
   }
 
+  /** Makes Find raise a JOAException, which is how PSJOA reports an app-server error. */
   public FakeCi failFind() {
     this.findSucceeds = false;
     return this;

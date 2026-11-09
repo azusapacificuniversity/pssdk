@@ -36,6 +36,19 @@ class PsjoaContractTest {
   }
 
   /**
+   * {@code Find} returns a CICollection (one CI per match), not a Boolean, and {@code CI.find}
+   * reads the matches out of it through {@code getProperty("Count")} and {@code
+   * invokeMethod("Item", ..)}, which JOAObject dispatches onto these two methods.
+   */
+  @Test
+  void theFindResultCollectionStillExposesCountAndItem() throws Exception {
+    Class<?> collection = Class.forName("psft.pt8.joa.CICollection");
+
+    assertEquals(long.class, collection.getMethod("getCount").getReturnType());
+    assertNotNull(collection.getMethod("item", long.class));
+  }
+
+  /**
    * A user-defined CI method may only return a PeopleCode primitive, and {@code
    * CISvc.deserializeObject} builds exactly a Boolean, a Long or a String from the wire. {@code
    * CI.execute} therefore returns Object; narrowing it back to Boolean would break every method
